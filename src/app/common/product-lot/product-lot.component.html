@@ -1,0 +1,49 @@
+<div *ngIf="drugDetail">
+  <p-dataView #dv [value]="drugDetail" [paginator]="true" [rows]="10" [alwaysShowPaginator]="false"
+   emptyMessage="ไม่พบข้อมูล" (onPage)="page = $event.first" filterBy="DrugDStock">
+    <p-header>
+      <div class="p-grid p-nogutter p-align-center">
+        <div class="p-col" style="padding-right: .5em;">{{drugItem.DrugNameText}}</div>
+        <div class="p-col-fixed" style="font-size: .9em;width: 72px;">
+          <p-checkbox [(ngModel)]="isAllLot" label="ทั้งหมด" binary="true" name="isAllLot" (onChange)="toggleAllLot(dv)"></p-checkbox>
+        </div>
+      </div>
+    </p-header>
+    <p-footer>
+      <div class="p-grid p-nogutter p-justify-between">
+        <div class="p-col-6">คงเหลือ {{totalAmount}} {{drugItem.DrugUnit}}</div>
+        <div class="p-col-6 rtx">{{totalValue | currency:'THB':''}}</div>
+      </div>
+    </p-footer>
+    <ng-template let-item let-rowIndex="rowIndex" pTemplate="listItem">
+      <div class="p-grid p-nogutter sub-text" style="padding: 3px 0;"
+        [ngClass]="{'stock-out': item.DrugDStock == 0}">
+        <div class="p-col-12 p-sm-5 p-md-3">
+          <div class="p-grid p-align-center p-nogutter">
+            <div class="p-col-fixed run-num">{{rowIndex + page + 1}}</div>
+            <div class="p-col">
+              {{item.DrugInvID}} &nbsp;&nbsp; {{item.DrugDDate | shortDate}}<br>{{item.SupplierName}}
+            </div>
+          </div>
+        </div>
+        <div class="p-col-12 p-sm-7 p-md-5">
+          <div class="p-grid p-nogutter ctx">
+            <div class="p-col-5">จำนวนรับ<br>{{item.DrugDAmount}} x {{item.DrugDPack}} {{drugItem.DrugUnit}}</div>
+            <div class="p-col-4">Lot No.<br>{{item.DrugDLot}}</div>
+            <div class="p-col-3">ราคา/pack<br>{{item.DrugDCost | currency:'THB':''}}</div>
+          </div>
+        </div>
+        <div class="p-col-12 p-sm-12 p-md-4">
+          <div class="p-grid p-nogutter ctx">
+            <div class="p-col-5 p-sm-5">คงเหลือ<br>{{item.DrugDStock}} {{drugItem.DrugUnit}}</div>
+            <div class="p-col-4 p-sm-3">มูลค่า<br>{{item.DrugDValue | currency:'THB':''}}</div>
+            <div class="p-col-3 p-sm-4">
+              วันหมดอายุ<br><span [style.color]="isExp(item)">{{item.DrugDExp | shortDate}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr style="width: 100%;border: 0.5px solid #d0d0d0;margin: 0;">
+    </ng-template>
+  </p-dataView>
+</div>

@@ -1,0 +1,280 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+  </div>
+  <div class="p-col right-panel" *ngIf="data.length">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">รายงาน{{pageText2[pageId]}}</div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="showReport === 1 && data.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="data" [resizableColumns]="true" selectionMode="single" [scrollable]="!globalService.isPrint"
+          [scrollHeight]="scrollViewPort()" dataKey="StInvID"
+          [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false" rowExpandMode="single">
+          <ng-template pTemplate="colgroup">
+            <colgroup>
+              <col style="width:10%"><col style="width:10%"><col style="width:20%">
+              <col style="width:14%"><col style="width:10%"><col style="width:12%">
+              <col style="width:13%"><col style="width:11%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn pSortableColumn="StInvID">เลขที่{{pageText[pageId]}}<p-sortIcon field="StInvID"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="StInvDate">วันที่<p-sortIcon field="StInvDate"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="SupplierName">{{pageText3[pageId]}}<p-sortIcon field="SupplierName"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="StInvRef">เลขที่อ้างอิง<p-sortIcon field="StInvRef"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="StInvDateUpdate">{{pageText2[pageId]}}แล้ว<p-sortIcon field="StInvDateUpdate"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="total">มูลค่า<p-sortIcon field="total"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="StatusName">สถานะ<p-sortIcon field="StatusName"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="StKeyUser">ผู้บันทึก<p-sortIcon field="StKeyUser"></p-sortIcon></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data let-expanded="expanded">
+            <tr #row [pSelectableRow]="data" [pContextMenuRow]="data">
+              <td style="padding: 0;white-space: nowrap;">
+                <a href="#" [pRowToggler]="data">
+                  <i [ngClass]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+                </a>
+                {{data.StInvID}}
+              </td>
+              <td class="ctx p0">{{data.StInvDate | shortDate}}</td>
+              <td>{{data.SupplierName}}</td>
+              <td class="ctx p0">{{data.StInvRef}}</td>
+              <td class="ctx p0">{{data.StInvDateUpdate | shortDate}}</td>
+              <td class="rtx">{{data.total | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.StatusName}}</td>
+              <td class="ctx p0">{{data.StKeyUser}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="rowexpansion" let-data>
+            <tr *ngIf="data.StInvMemo">
+              <td colspan="8" style="padding: .25em .5em;background-color: #ffe;">
+                <b>หมายเหตุ: &nbsp;</b>{{data.StInvMemo}}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="8" style="background-color: #ffe;">
+                <table border="1" class="expand">
+                  <tr>
+                    <th style="width:8%">รหัส</th><th style="width:27%">ชื่อวัสดุ</th><th style="width:10%">Lot No.</th>
+                    <th style="width:9%">วันหมดอายุ</th><th *ngIf="pageId" style="width:9%">คงคลัง</th><th style="width:12%">จำนวน{{pageText[pageId]}}</th>
+                    <th style="width:7%">หน่วย</th><th style="width:8%">ต้นทุน/pack</th><th style="width:10%">มูลค่า</th>
+                  </tr>
+                  <tr class="detail" *ngFor="let item of getDetail(data.StInvID)" (dblclick)="onDblClickExpand(item)">
+                    <td style="padding: 4px">{{item.DtDrugID}}</td>
+                    <td>{{item.pd_name}}</td>
+                    <td class="ctx p0">{{item.DtLot}}</td>
+                    <td class="ctx p0" [style.color]="isExp(item.DtExp)">{{item.DtExp | shortDate}}</td>
+                    <td *ngIf="pageId" class="ctx p0">{{item.DtStock | number:'1.0-2'}}</td>
+                    <td class="ctx p0">{{item.DtAmount | number:'1.0-2'}} x {{item.DtPack}}</td>
+                    <td class="ctx p0">{{item.pd_unit}}</td>
+                    <td class="rtx">{{item.DtPrice | currency:'THB':''}}</td>
+                    <td class="rtx">{{(item.DtAmount * item.DtPrice) | currency:'THB':''}}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 2 && detail.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="detail" [resizableColumns]="true" selectionMode="single" [scrollable]="!globalService.isPrint"
+          [scrollHeight]="scrollViewPort()" [selection]="dataSelect" dataKey="DtDID"
+          [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false"
+          [contextMenu]="cm" contextMenuSelectionMode="joint" (onContextMenuSelect)="selectRow($event)"
+          (onRowSelect)="selectRow($event)" (onRowUnselect)="rowHasSelect=false" rowExpandMode="single">
+          <ng-template pTemplate="colgroup">
+            <colgroup>
+              <col style="width:8%"><col style="width:8%"><col style="width:7%"><col style="width:20%">
+              <col style="width:8%"><col style="width:8%"><col *ngIf="pageId" style="width:8%"><col style="width:10%">
+              <col style="width:6%"><col style="width:8%"><col style="width:9%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn pSortableColumn="StInvID">เลขที่{{pageText[pageId]}}<p-sortIcon field="StInvID"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="StInvDate">วันที่<p-sortIcon field="StInvDate"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="DtDrugID">รหัส<p-sortIcon field="DtDrugID"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="pd_name">ชื่อวัสดุ<p-sortIcon field="pd_name"></p-sortIcon></th>
+              <th pResizableColumn>Lot No.</th>
+              <th pResizableColumn>วันหมดอายุ</th>
+              <th *ngIf="pageId" pResizableColumn>คงคลัง</th>
+              <th pResizableColumn>จำนวน{{pageText[pageId]}}</th>
+              <th pResizableColumn>หน่วย</th>
+              <th pResizableColumn>ต้นทุน/pack</th>
+              <th pResizableColumn>มูลค่า</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr #row [pSelectableRow]="data" [pContextMenuRow]="data" (dblclick)="onDblClick($event)">
+            <td class="ctx p0">{{data.StInvID}}</td>
+            <td class="ctx p0">{{data.StInvDate | shortDate}}</td>
+            <td style="padding: 4px">{{data.DtDrugID}}</td>
+              <td>{{data.pd_name}}</td>
+              <td class="ctx p0">{{data.DtLot}}</td>
+              <td class="ctx p0" [style.color]="isExp(data.DtExp)">{{data.DtExp | shortDate}}</td>
+              <td *ngIf="pageId" class="ctx p0">{{data.DtStock | number:'1.0-2'}}</td>
+              <td class="ctx p0">{{data.DtAmount | number:'1.0-2'}} x {{data.DtPack}}</td>
+              <td class="ctx p0">{{data.pd_unit}}</td>
+              <td class="rtx">{{data.DtPrice | currency:'THB':''}}</td>
+              <td class="rtx">{{(data.DtAmount * data.DtPrice) | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <div class="footer-rpt-btn" *ngIf="data.length" style="font-size: .9em;">
+      <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer">
+        <div class="p-col-3 ltx" style="font-weight: bold">= {{data.length | number:'1.0'}} =</div>
+        <div class="p-col-8 rtx" style="font-weight: bold">รวมมูลค่า {{dataTotal | currency:'THB':''}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="drugSearch">รหัส/ชื่อวัสดุ</label>
+          <input type="text" id="drugSearch" name="drugSearch" pInputText [(ngModel)]="drugSearch">
+        </div>
+        <div>
+          <label for="catId">หมวดวัสดุ</label>
+          <p-dropdown inputId="catId" [options]="dataService.DrugCatTable" [(ngModel)]="catId"
+          [style]="{'width':'100%'}" appendTo="body" name="catId">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="groupId">กลุ่มวัสดุ</label>
+          <p-dropdown inputId="groupId" [options]="dataService.DrugGroupTable" [(ngModel)]="groupId"
+          [style]="{'width':'100%'}" appendTo="body" name="groupId"
+          [itemSize]="31" [virtualScroll]="true" [filter]="true" filterBy="label,value">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="StInvID">เลขที่{{pageText[pageId]}}</label>
+          <p-autoComplete inputId="StInvID" [(ngModel)]="stInvSelect" [suggestions]="filteredResults"
+            (completeMethod)="filterResults($event)" [size]="30" [minLength]="2" field="StInvID"
+            [forceSelection]="true" scrollHeight="200px" [autofocus]="true" appendTo="body"
+            (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)" name="StInvID">
+            <ng-template let-item pTemplate="item">
+              <div class="ui-helper-clearfix panel-1" style="font-size: .9em;width: 80vw; max-width: 500px">
+                {{item.StInvID || ''}} : {{item.StInvDate | shortDate}} : 
+                {{item.SupplierName || ''}} | {{item.StInvRef || ''}} 
+                <span *ngIf="!item.StInvUpdate" style="color: #ff8e20">(ยังไม่ได้{{pageText2[pageId]}})</span>
+              </div>
+            </ng-template>
+          </p-autoComplete>
+        </div>
+        <div>
+          <label for="StInvID2">ถึงเลขที่</label>
+          <p-autoComplete inputId="StInvID2" [(ngModel)]="stInvSelect2" [suggestions]="filteredResults"
+            (completeMethod)="filterResults($event)" [size]="30" [minLength]="2" field="StInvID"
+            [forceSelection]="true" scrollHeight="200px" appendTo="body"
+            (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)" name="StInvID2">
+            <ng-template let-item pTemplate="item">
+              <div class="ui-helper-clearfix panel-1" style="font-size: .9em;width: 80vw; max-width: 500px">
+                {{item.StInvID || ''}} : {{item.StInvDate | shortDate}} : 
+                {{item.SupplierName || ''}} | {{item.StInvRef || ''}} 
+                <span *ngIf="!item.StInvUpdate" style="color: #ff8e20">(ยังไม่ได้{{pageText2[pageId]}})</span>
+              </div>
+            </ng-template>
+          </p-autoComplete>
+        </div>
+        <div>
+          <label for="stInvDate">วันที่ใบ{{pageText[pageId]}}ตั้งแต่</label>
+          <p-calendar [(ngModel)]="query.stInvDate" dateFormat="dd/mm/yy" [locale]="th" name="stInvDate" appendTo="body"
+          [minDate]="minDate" showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="stInvDate2">ถึงวันที่</label>
+          <p-calendar [(ngModel)]="query.stInvDate2" dateFormat="dd/mm/yy" [locale]="th" name="stInvDate2" appendTo="body"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning"
+          ></p-calendar>
+        </div>
+        <div>
+          <label for="stInvDateUpdate">วันที่{{pageText2[pageId]}}ตั้งแต่</label>
+          <p-calendar [(ngModel)]="query.stInvDateUpdate" dateFormat="dd/mm/yy" [locale]="th" name="stInvDateUpdate" appendTo="body"
+          [minDate]="minDate" showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="stInvDateUpdate2">ถึงวันที่</label>
+          <p-calendar [(ngModel)]="query.stInvDateUpdate2" dateFormat="dd/mm/yy" [locale]="th" name="stInvDateUpdate2" appendTo="body"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="stInvCust">{{pageText3[pageId]}}</label>
+          <p-dropdown inputId="stInvCust" [options]="pageId ? globalService.customerTable : globalService.supplierTable"
+           [(ngModel)]="query.stInvCust" [virtualScroll]="true" [itemSize]="31" [filter]="true" filterBy="label,value"
+           [style]="{'width':'100%'}" appendTo="body" name="stInvCust">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="status">สถานะ</label>
+          <p-dropdown inputId="status" [options]="globalService.statusTable" [(ngModel)]="query.status"
+          [style]="{'width':'100%'}" appendTo="body" name="status">
+          </p-dropdown>
+        </div>
+        <div class="rtx">
+          <button type="button" class="ui-button-success" pButton icon="pi pi-search" style="width: auto;"
+          label="ค้นหา" [disabled]="rptForm.form.invalid || !isReady" (click)="selectFromLeftPanel()"></button>
+        </div>
+        <div style="padding-bottom: 0"><hr></div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="stInvUpdate" name="stInvUpdate" (onChange)="showStUpdate()"
+          [label]="query.stInvUpdate === null ? 'รวมที่ยังไม่' + pageText2[pageId] : 'แสดงที่' + pageText2[pageId] + 'แล้ว'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <p-radioButton name="group1" label="แสดงใบ{{pageText[pageId]}}" [value]="1" [(ngModel)]="showReport" (ngModelChange)="reportChange()"></p-radioButton>
+        </div>
+        <div>
+          <p-radioButton name="group1" label="แสดงรายการวัสดุ" [value]="2" [(ngModel)]="showReport" (ngModelChange)="reportChange()"></p-radioButton>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<p-contextMenu #cm [model]="contextItems"></p-contextMenu>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="!!data.length"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-dialog #pd header="ข้อมูลวัสดุ" [(visible)]="displayPdItemDialog"
+[contentStyle]="{'overflow-x':'hidden', 'padding':'5px', 'max-height':'95vh'}"
+(onHide)="onPdDialogHide()" [style]="{'max-width': '730px', 'width':'95vw'}"
+[modal]="true" [blockScroll]="true" appendTo="body" [focusOnShow]="false">
+  <app-product *ngIf="showAppPD" [pdId]="pdId" [isDialog]="true"
+   (onClose)="onPdDialogHide()"></app-product>
+</p-dialog>

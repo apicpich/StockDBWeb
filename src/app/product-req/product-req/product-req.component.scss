@@ -1,0 +1,27 @@
+.op-container{
+  width: 100%;
+  max-height: 95vh;
+  overflow-y: auto;
+}
+.bd {
+  border: 1px solid #a0a0a0;
+}
+
+:host ::ng-deep .add-btn span.ui-button-icon-left {
+  left: 0.3em;
+}
+
+:host ::ng-deep .add-btn span.ui-button-text {
+  padding: 0.35em 0.75em 0.35em 1.8em;
+}
+
+.triangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  border-width: 0 0 1em 1em;
+  border-color: transparent transparent transparent #ff5722;
+  left: 0;
+  top: 0;
+}

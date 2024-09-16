@@ -1,0 +1,136 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+  </div>
+  <div class="p-col right-panel" *ngIf="data.length">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">รายงานใบคุมคลัง</div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="data.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="data" [resizableColumns]="true" selectionMode="single" [scrollable]="!globalService.isPrint"
+          [scrollHeight]="scrollViewPort()" dataKey="DtDID" [contextMenu]="cm"
+          [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="colgroup">
+            <colgroup>
+              <col style="width:8%"><col style="width:8%"><col style="width:12%">
+              <col style="width:18%"><col style="width:9%"><col style="width:8%">
+              <col style="width:8%"><col style="width:10%"><col style="width:9%">
+              <col style="width:10%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv ltx">
+              <th colspan="10" style="font-size: 1.2em;font-weight: bold;padding-left: .5em;">
+                {{drugItem.DrugNameText}}
+              </th>
+            </tr>
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn>วันที่</th>
+              <th pResizableColumn>เลขที่</th>
+              <th pResizableColumn>อ้างอิง</th>
+              <th pResizableColumn>ผู้รับ/เบิก</th>
+              <th pResizableColumn>Lot No.</th>
+              <th pResizableColumn>รับเข้า</th>
+              <th pResizableColumn>เบิกจ่าย</th>
+              <th pResizableColumn>คงเหลือ</th>
+              <th pResizableColumn>มูลค่า</th>
+              <th pResizableColumn>มูลค่าคงเหลือ</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data let-expanded="expanded">
+            <tr #row [pSelectableRow]="data" [pContextMenuRow]="data" (dblclick)="onRowShowPdItem()"
+            [ngClass]="{'inst': !data.mode}">
+              <td class="ctx p0">{{data.StInvDateUpdate | shortDate}}</td>
+              <td class="ctx p0">{{data.StInvID}}</td>
+              <td class="ctx p0">{{data.StInvRef}}</td>
+              <td>{{data.mode ? '&nbsp;&nbsp;&nbsp;' : ''}} {{data.invName}}</td>
+              <td class="ctx p0">{{data.DtLot}}</td>
+              <td class="rtx">{{data.in | number:'1.0-2'}}</td>
+              <td class="rtx">{{data.out | number:'1.0-2'}}</td>
+              <td class="rtx">{{data.remainAmount | number:'1.0-2'}} {{drugItem.DrugUnit}}</td>
+              <td class="rtx">{{(data.DtAmount * data.DtPrice) | currency:'THB':''}}</td>
+              <td class="rtx">{{data.remainValue | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="5"></td>
+              <td class="rtx">{{sumIn | number:'1.0-2'}}</td>
+              <td class="rtx">{{sumOut | number:'1.0-2'}}</td>
+              <td class="rtx">{{drugItem.DrugStock | number:'1.0-2'}} {{drugItem.DrugUnit}}</td>
+              <td colspan="2"></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="productSelect">รายการวัสดุ</label>
+          <p-autoComplete inputId="productSelect" [(ngModel)]="productSelect" [suggestions]="filteredProductResults"
+            (completeMethod)="filterProductResults($event)" [size]="30" appendTo="body"
+            [minLength]="1" placeholder="ใส่คำค้นหา" field="DrugID" [forceSelection]="true"
+            scrollHeight="200px" required name="productSelect"
+            (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)">
+            <ng-template let-item pTemplate="item">
+              <div class="ui-helper-clearfix panel-1">
+                {{item.DrugID || ''}} : {{item.DrugNameText || ''}}
+              </div>
+            </ng-template>
+          </p-autoComplete>
+        </div>
+        <div>
+          <label for="tdate1">ตั้งแต่วันที่</label>
+          <p-calendar [(ngModel)]="query.stInvDateUpdate" dateFormat="dd/mm/yy" [locale]="th" name="stInvDateUpdate" appendTo="body"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div class="rtx">
+          <button type="button" class="ui-button-success" pButton icon="pi pi-search" style="width: auto;"
+          label="ค้นหา" [disabled]="rptForm.form.invalid || !isReady" (click)="selectFromLeftPanel()"></button>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<p-contextMenu #cm [model]="contextItems"></p-contextMenu>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="!!data.length"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-dialog #pd header="ข้อมูลวัสดุ" [(visible)]="displayPdItemDialog"
+[contentStyle]="{'overflow-x':'hidden', 'padding':'5px', 'max-height':'95vh'}"
+(onHide)="onPdDialogHide()" [style]="{'max-width': '730px', 'width':'95vw'}"
+[modal]="true" [blockScroll]="true" appendTo="body" [focusOnShow]="false">
+  <app-product *ngIf="showAppPD" [pdId]="pdId" [isDialog]="true"
+   (onClose)="onPdDialogHide()"></app-product>
+</p-dialog>

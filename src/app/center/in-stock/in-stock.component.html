@@ -1,0 +1,387 @@
+<div class="p-grid content isPrinting" style="margin-top: 0;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+    <!-- <app-left-panel [pageType]="0"></app-left-panel> -->
+  </div>
+  <div class="p-col right-panel">
+    <form #invForm="ngForm">
+      <div class="inv-header stinv">
+        <div class="p-grid ui-fluid p-nogutter">
+          <div class="p-col-fixed" style="display: flex;">
+            <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+            (click)="leftPanel2Show = true" style="cursor: pointer;"></i>
+            <div style="font-size: 1rem; font-weight: bold">รายการรับ</div>
+          </div>
+          <div class="p-col">
+            <span *ngIf="StInv" style="float:right;">
+              <div *ngIf="StInv.StInvUpdate" style="font-size: 1rem; font-weight: bold">
+                {{'รับเข้าคลังแล้ว ' + (StInv.StInvDateUpdate | shortDate)}}
+              </div>
+              <div *ngIf="!StInv.StInvUpdate"
+                style="font-size: 1rem; font-weight: bold;color: red;">
+                (ยังไม่ได้รับเข้าคลัง)
+              </div>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="p-grid ui-fluid p-nogutter p-align-end">
+        <div class="p-col-6 p-sm-5 p-md-3">
+          <label for="StInvSelect" >เลขที่รับ</label>
+          <p-autoComplete inputId="StInvSelect" [(ngModel)]="StInvSelect" [suggestions]="filteredResults"
+            (completeMethod)="filterResults($event)" [size]="30" [minLength]="2" placeholder="ค้นหาใบรับ" field="StInvID" 
+            [forceSelection]="true" scrollHeight="200px" required appendTo="body" [autofocus]="true" 
+            (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)" 
+            (onSelect)="selectItem()" name="StInvSelect" [dropdown]="true">
+            <ng-template let-StInvSelect pTemplate="item">
+              <div class="ui-helper-clearfix panel-1" style="width: 80vw; max-width: 600px">
+                {{StInvSelect.StInvID || ''}} : {{StInvSelect.StInvDate | shortDate}} : 
+                {{StInvSelect.SupplierName || ''}} {{StInvSelect.StInvRef || ''}} 
+                <span *ngIf="!StInvSelect.StInvUpdate" style="color: #ff8e20">(ยังไม่ได้รับเข้าคลัง)</span>
+              </div>
+            </ng-template>
+          </p-autoComplete>
+        </div>
+        <div class="p-col">
+          <div style="float: right">
+            <button *ngIf="StInv && !StInv.StInvUpdate" type="button" class="ui-button-success"
+            pButton icon="pi pi-plus" (click)="addStDetail()" label="เพิ่มรายการ F4" #addDetail></button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="StInv" class="p-grid ui-fluid" style="font-size: .9em">
+        <div class="p-col-6 p-sm-3 p-md-2 b0">
+          <label for="StOrderID">เลขที่ใบสั่งซื้อ</label>
+          <input type="text" pInputText id="StOrderID" name="StOrderID" [(ngModel)]="StInv.StOrderID" [disabled]="StInv.StInvUpdate" name="StOrderID" />
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StOrderDate" >วันที่สั่งซื้อ</label>
+          <p-calendar [(ngModel)]="tdate1" dateFormat="dd/mm/yy" [locale]="th" [disabled]="StInv.StInvUpdate" name="tdate1"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning" (onClearClick)="StDetail.StOrderDate = null"
+          (onBlur)="StInv.StOrderDate = tdate1 ? tdate1.toISOString() : null" (onSelect)="StInv.StOrderDate = tdate1 ? tdate1.toISOString() : null">
+          </p-calendar>
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StQuoteDate" >วันที่เสนอราคา</label>
+          <p-calendar [(ngModel)]="tdate2" dateFormat="dd/mm/yy" [locale]="th" [disabled]="StInv.StInvUpdate" name="tdate2"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning" (onClearClick)="StDetail.StQuoteDate = null"
+          (onBlur)="StInv.StQuoteDate = tdate2 ? tdate2.toISOString() : null" (onSelect)="StInv.StQuoteDate = tdate2 ? tdate2.toISOString() : null">
+          </p-calendar>
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StAppvDate" >วันที่ประกาศผล</label>
+          <p-calendar [(ngModel)]="tdate3" dateFormat="dd/mm/yy" [locale]="th" [disabled]="StInv.StInvUpdate" name="tdate3"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning" (onClearClick)="StDetail.StAppvDate = null"
+          (onBlur)="StInv.StAppvDate = tdate3 ? tdate3.toISOString() : null" (onSelect)="StInv.StAppvDate = tdate3 ? tdate3.toISOString() : null">
+          </p-calendar>
+        </div>
+        <div class="p-col-6 p-sm-3 p-md-2 b0">
+          <label for="StApprID">เลขที่ขออนุมัติ</label>
+          <input type="text" pInputText id="StApprID" name="StApprID" [(ngModel)]="StInv.StApprID" [disabled]="StInv.StInvUpdate" />
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StApprDate" >วันที่ขออนุมัติ</label>
+          <p-calendar [(ngModel)]="tdate4" dateFormat="dd/mm/yy" [locale]="th" [disabled]="StInv.StInvUpdate" name="tdate4"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning" (onClearClick)="StDetail.StApprDate = null"
+          (onBlur)="StInv.StApprDate = tdate4 ? tdate4.toISOString() : null" (onSelect)="StInv.StApprDate = tdate4 ? tdate4.toISOString() : null">
+          </p-calendar>
+        </div>
+        <div class="p-col-6 p-sm-4 p-md-3 b0">
+          <label for="StInvCust">ผู้จำหน่าย</label>
+          <div>
+            <p-dropdown [options]="dataService.SupplierTable" [(ngModel)]="StInv.StInvCust" name="StInvCust"
+            inputId="StInvCust" [style]="{'width':'100%'}" required [disabled]="StInv.StInvUpdate"
+            [filter]="true" filterBy="label,value" [virtualScroll]="true" itemSize="30">
+            </p-dropdown>
+          </div>
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StInvDate" >วันที่รับ</label>
+          <p-calendar [(ngModel)]="tdate5" dateFormat="dd/mm/yy" [locale]="th" [disabled]="StInv.StInvUpdate" name="tdate5"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning" (onClearClick)="StDetail.StInvDate = null"
+          (onBlur)="StInv.StInvDate = tdate5 ? tdate5.toISOString() : null" (onSelect)="StInv.StInvDate = tdate5 ? tdate5.toISOString() : null">
+          </p-calendar>
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StInvRef">เลขที่อ้างอิง</label>
+          <input type="text" pInputText id="StInvRef" name="StInvRef" [(ngModel)]="StInv.StInvRef" [disabled]="StInv.StInvUpdate" />
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StInvRefDate">บิลลงวันที่</label>
+          <p-calendar [(ngModel)]="tdate6" dateFormat="dd/mm/yy" [locale]="th" [disabled]="StInv.StInvUpdate" name="tdate6"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning" (onClearClick)="StDetail.StInvRefDate = null"
+          (onBlur)="StInv.StInvRefDate = tdate6 ? tdate6.toISOString() : null" (onSelect)="StInv.StInvRefDate = tdate6 ? tdate6.toISOString() : null">
+          </p-calendar>
+        </div>
+        <div class="p-col-6 p-sm-4 p-md-3 b0">
+          <label for="StInvCat">หมวดวัสดุ</label>
+          <div>
+            <p-dropdown [options]="StInvCatTable" [(ngModel)]="StInv.StInvCat" editable="true" name="StInvCat"
+            inputId="StInvCat" [style]="{'width':'100%'}" [disabled]="StInv.StInvUpdate"></p-dropdown>
+          </div>
+        </div>
+        <div class="p-col-6 p-sm-4 p-md-3 b0">
+          <label for="StInvTaxStatus">รูปแบบภาษี</label>
+          <div class="p-grid p-nogutter">
+            <div class="p-col-fixed" style="width: 90px;padding-right: 5px">
+              <p-dropdown inputId="StInvTaxStatus" [options]="dataService.taxType" [(ngModel)]="StInv.StInvTaxStatus" [style]="{'width':'100%'}" 
+              [disabled]="StInv.StInvUpdate" name="StInvTaxStatus" (onChange)="setVat();setDetailTotal()">
+            </p-dropdown>
+            </div>
+            <div class="p-col">
+              <div class="ui-inputgroup">
+                <input type="number" style="max-width: 32px;text-align: right" class="tax-input" pInputText [(ngModel)]="StInv.StInvTaxValue" 
+                [disabled]="StInv.StInvUpdate || StInv.StInvTaxStatus === 0" required min="0" name="StInvTaxValue" (blur)="setDetailTotal()">
+                <span class="ui-inputgroup-addon">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="p-col-6 p-sm-4 p-md-3 b0">
+          <label for="StInvPayID">ผู้สำรองจ่าย</label>
+          <div>
+            <p-dropdown [options]="dataService.SupplierTable" [(ngModel)]="StInv.StInvPayID" name="StInvPayID"
+            inputId="StInvPayID" [style]="{'width':'100%'}" [disabled]="StInv.StInvUpdate" inputId="StInvPayID"
+            [filter]="true" filterBy="label,value" [virtualScroll]="true" itemSize="30">
+            </p-dropdown>
+          </div>
+        </div>
+        <div class="p-col-6 p-sm-4 p-md-3 b0">
+          <label for="StInvStatus">สถานะ</label>
+          <div>
+            <p-dropdown [options]="dataService.StatusTypeTable" [(ngModel)]="StInv.StInvStatus" required
+             [disabled]="StInv.StInvUpdate" name="StInvStatus" inputId="StInvStatus" [style]="{'width':'100%'}">
+            </p-dropdown>
+          </div>
+        </div>
+        <div class="p-col-6 p-sm-4 p-md-3 b0">
+          <label for="StInvBudget">งบประมาณ</label>
+          <div>
+            <p-dropdown [options]="dataService.BudgetTable" [(ngModel)]="StInv.StInvBudget" required
+             [disabled]="StInv.StInvUpdate" name="StInvBudget" inputId="StInvBudget" [style]="{'width':'100%'}">
+            </p-dropdown>
+          </div>
+        </div>
+        <div class="p-col-6 p-sm-4 p-md-2 b0">
+          <label for="StInvMethod">วิธีการจัดซื้อ</label>
+          <div>
+            <p-dropdown [options]="dataService.POMethodTable" [(ngModel)]="StInv.StInvMethod" required
+             [disabled]="StInv.StInvUpdate" name="StInvMethod" inputId="StInvMethod" [style]="{'width':'100%'}">
+            </p-dropdown>
+          </div>
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StInvDis1">ส่วนลด1</label>
+          <input type="text" pInputText id="StInvDis1" style="text-align: right" name="StInvDis1" required
+          [ngModel]="StInv.StInvDis1 | currency:'THB':''" [disabled]="StInv.StInvUpdate"
+          (change)="StInv.StInvDis1 = +($event.target.value);setDetailTotal();"
+          oninput="this.value = this.value.replace(/[^0-9.]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" />
+        </div>
+        <div class="p-col-6 p-sm-2 p-md-2 b0">
+          <label for="StInvDis2">ส่วนลด2</label>
+          <input type="text" pInputText id="StInvDis2" style="text-align: right" name="StInvDis2" required
+          [ngModel]="StInv.StInvDis2 | currency:'THB':''" [disabled]="StInv.StInvUpdate"
+          (change)="StInv.StInvDis2 = +($event.target.value);setDetailTotal();"
+          oninput="this.value = this.value.replace(/[^0-9.]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" />
+        </div>
+        <div class="p-col-12 p-sm-8 p-md-6 b0">
+          <label for="StInvMemo">หมายเหตุ</label>
+          <input type="text" pInputText id="StInvMemo" name="StInvMemo" [(ngModel)]="StInv.StInvMemo" [disabled]="StInv.StInvUpdate" />
+        </div>
+      </div>
+
+      <div *ngIf="StInvDetail" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+        <div style="min-width: 800px">
+          <p-table [value]="StInvDetail" [resizableColumns]="true" selectionMode="single" [scrollable]="!globalService.isPrint"
+            [scrollHeight]="scrollViewPort()" [(selection)]="StInvDetailSelect" (onRowSelect)="rowHasSelect=true"
+            (onRowUnselect)="rowHasSelect=false" dataKey="DtDID" [contextMenu]="cm" contextMenuSelectionMode="joint"
+            [rowTrackBy]="trackByFn">
+            <ng-template pTemplate="colgroup" let-columns>
+              <colgroup>
+                <col style="width:8%"><col style="width:20%"><col style="width:4%"><col style="width:9%"><col style="width:9%">
+                <col style="width:11%"><col style="width:6%"><col style="width:8%"><col style="width:6%"><col style="width:5%">
+                <col style="width:10%"><col style="width:4%">
+              </colgroup>
+            </ng-template>
+            <ng-template pTemplate="header">
+              <tr class="stinv" style="white-space: nowrap;">
+                <th pResizableColumn pSortableColumn="DtDrugID">รหัส<p-sortIcon field="DtDrugID"></p-sortIcon></th>
+                <th pResizableColumn pSortableColumn="DrugNameText">ชื่อวัสดุ<p-sortIcon field="DrugNameText"></p-sortIcon></th>
+                <th pResizableColumn>นว.</th>
+                <th pResizableColumn pSortableColumn="DtLot">Lot No.<p-sortIcon field="DtLot"></p-sortIcon></th>
+                <th pResizableColumn pSortableColumn="DtExp">วันหมดอายุ<p-sortIcon field="DtExp"></p-sortIcon></th>
+                <th pResizableColumn>จำนวน</th>
+                <th pResizableColumn>หน่วย</th>
+                <th pResizableColumn>ต้นทุน</th>
+                <th pResizableColumn>แถม</th>
+                <th pResizableColumn style="padding: 0">ตำแหน่ง</th>
+                <th pResizableColumn>รวมมูลค่า</th>
+                <th style="padding: 0">ซื้อร่วม</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-data let-rowIndex="rowIndex">
+              <tr #row [pSelectableRow]="data" [pContextMenuRow]="data" (dblclick)="onDblClick($event)">
+                <td style="padding: 4px">{{data.DtDrugID}}</td>
+                <td>{{data.DrugNameText}}</td>
+                <td style="text-align: center;padding: 0">
+                  <p-checkbox binary="true" disabled [(ngModel)]="data.DtInnovate" name="{{'innovate' + rowIndex}}"></p-checkbox>
+                </td>
+                <td>{{data.DtLot}}</td>
+                <td style="text-align: center" [style.color]="isExp(data.DtExp)">{{data.DtExp | shortDate}}</td>
+                <td style="text-align: center;padding: 0">{{data.DtAmount}} x {{data.DtPack}}</td>
+                <td style="text-align: center;padding: 0">{{data.DrugUnit}}</td>
+                <td style="text-align: right">{{data.DtPrice | currency:'THB':''}}</td>
+                <td style="text-align: right">{{data.DtStock}}</td>
+                <td style="text-align: center;padding: 0">{{data.DtLocation}}</td>
+                <td style="text-align: right">{{data.DtAmount * data.DtPrice | currency:'THB':''}}</td>
+                <td style="text-align: center;padding: 0">{{getCoPO(data.DtCoPO)}}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+
+      <div class="footer-btn" *ngIf="StInvDetail" style="font-size: .9em;">
+        <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer" style="height: 36px;">
+          <div class="p-col-5 p-sm-3" style="text-align: left">
+            <button *ngIf="StInv && !StInv.StInvUpdate" pButton type="button" icon="pi pi-save" label="บันทึก" (click)="saveData()"
+              [disabled]="!invForm.form.valid">
+            </button>
+          </div>
+          <div class="p-col-4 p-sm-5" style="text-align: right;font-weight: bold">รวม {{StInvDetail.length | number:'1.0'}} รายการ</div>
+          <div class="p-col-3 p-sm-4" style="text-align: right;font-weight: bold">{{StInvDetailTotal | currency:'THB':''}}</div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<p-contextMenu #cm [model]="contextItems"></p-contextMenu>
+
+<ng-container *ngIf="!globalService.isPrint">
+
+<div *ngIf="StDetail">
+  <form #dialog="ngForm">
+    <p-dialog header="รายการวัสดุ" [style]="{'max-width':'576px'}" [(visible)]="displayDialog" [focusOnShow]="false"
+     [contentStyle]="{'overflow':'visible'}" [modal]="true" appendTo="body">
+      <div class="p-grid ui-fluid">
+        <div class="p-col">
+          <label for="drugId" #did></label>
+          <p-autoComplete [(ngModel)]="drugSelect" [suggestions]="filteredDrugResults" (completeMethod)="filterDrugResults($event)"
+            [size]="30" [disabled]="StInv.StInvUpdate" [minLength]="1" placeholder="ใส่คำค้นหา" field="DrugNameText" [dropdown]="true"
+            [forceSelection]="true" scrollHeight="200px" required name="DtDrugID" (onSelect)="selectDrugItem(1)"
+            inputId="drugId" (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)">
+            <ng-template let-drugSelect pTemplate="item">
+              <div class="ui-helper-clearfix panel-1">
+                {{drugSelect.DrugID || ''}} : {{drugSelect.DrugNameText || ''}}
+              </div>
+            </ng-template>
+          </p-autoComplete>
+          <div style="color: red;font-size: 0.96rem" *ngIf="hasDup">
+            *มีรายการรับ {{drugSelect?.DrugNameText}} จำนวน {{dupAmount}} {{StDetail.DrugUnit}} แล้วในใบรับนี้
+          </div>
+        </div>
+      </div>
+      <div class="p-grid ui-fluid">
+        <div class="p-col-12 p-sm-4 b0">
+          <label for="DtLot">Lot No.</label>
+          <input type="text" pInputText id="DtLot" name="DtLot" [(ngModel)]="StDetail.DtLot" [disabled]="StInv.StInvUpdate">
+        </div>
+        <div class="p-col-6 p-sm-4 b0">
+          <label for="DtExp">วันหมดอายุ</label>
+          <p-calendar [(ngModel)]="tdate7" dateFormat="dd/mm/yy" [locale]="th" [disabled]="StInv.StInvUpdate" [inputStyle]="{'color': isExp(StDetail.DtExp)}"
+            name="DtExp" (onBlur)="StDetail.DtExp = tdate7 ? tdate7.toISOString() : null" (onSelect)="StDetail.DtExp = tdate7 ? tdate7.toISOString() : null" 
+            showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning" (onClearClick)="StDetail.DtExp = null" >
+          </p-calendar>
+        </div>
+        <div class="p-col-6 p-sm-4 b0 p-col-align-end" style="padding-bottom: 5px;text-align: right">
+          <p-checkbox binary="true" name="DtInnovate" label="บัญชีนวัตกรรม" [(ngModel)]="StDetail.DtInnovate" [disabled]="StInv.StInvUpdate"></p-checkbox>
+        </div>
+      </div>
+      <div class="p-grid ui-fluid" style="margin-top: 0">
+        <div class="p-col-4 p-sm-3 b0" style="text-align: right">
+          <label for="DtAmount">จำนวน</label>
+          <input style="text-align: right" type="number" pInputText id="DtAmount" required name="DtAmount" min="1"
+            [(ngModel)]="StDetail.DtAmount" [disabled]="StInv.StInvUpdate">
+        </div>
+        <div class="p-col-4 p-sm-3 b0">
+          <label style="margin-left: 1.5em;" for="DtPack">ขนาด</label>
+          <div style="display: inline-flex;margin-right: 1em">
+            <div style="margin-right: .85em; margin-top: .5em;">X</div>
+            <input type="number" pInputText id="DtPack" required name="DtPack" min="1" [(ngModel)]="StDetail.DtPack" 
+            [disabled]="StInv.StInvUpdate" (change)="dtPackAfterUpdate()">
+          </div>
+        </div>
+        <div class="p-col-4 p-sm-3 b0" style="text-align: right">
+          <label for="DtStock">แถม</label>
+          <input style="text-align: right" type="number" pInputText id="DtStock" required name="DtStock" min="0" 
+          [(ngModel)]="StDetail.DtStock" [disabled]="StInv.StInvUpdate">
+        </div>    
+        <div class="p-col-6 p-sm-3 b0" style="text-align: right">
+          <label for="DtPrice">ต้นทุน</label>
+          <input style="text-align: right" type="text" pInputText id="DtPrice" required name="DtPrice"
+          [ngModel]="StDetail.DtPrice | currency:'THB':''" [disabled]="StInv.StInvUpdate"
+          (change)="StDetail.DtPrice = +($event.target.value);"
+          oninput="this.value = this.value.replace(/[^0-9.]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" />
+        </div>
+        <div class="p-col-6 p-sm-3 p-sm-offset-9 b0" style="text-align: right">
+          <label for="DtTotal">รวมมูลค่า</label>
+          <div pInputText id="DtTotal">{{StDetail.DtAmount * StDetail.DtPrice || 0 | currency:'THB':''}}</div>
+        </div>
+      </div>
+      <div class="p-grid ui-fluid" style="margin-top: 0">
+        <div class="p-col-8 p-sm-9 b0">
+          <label for="TName">ชื่อการค้า</label>
+          <input pInputText type="text" id="TName" name="TName" [(ngModel)]="StDetail.TName" [disabled]="StInv.StInvUpdate" (change)="editTName = true">
+        </div>
+        <div class="p-col-4 p-sm-3 b0">
+          <label for="DtLocation">ตำแหน่งที่วาง</label>
+          <input pInputText type="text" id="DtLocation" name="DtLocation" [(ngModel)]="StDetail.DtLocation" [disabled]="StInv.StInvUpdate">
+        </div>
+      </div>
+      <div class="p-grid">
+        <div class="p-col-12 b0" style="margin-top: 5px">ซื้อร่วม</div>
+        <div class="p-col-3 b0">
+          <p-radioButton name="group1" label="ซื้อเอง" [value]="0" [(ngModel)]="StDetail.DtCoPO" [disabled]="StInv.StInvUpdate"></p-radioButton>
+        </div>
+        <div class="p-col-3 b0">
+          <p-radioButton name="group1" label="จังหวัด" [value]="1" [(ngModel)]="StDetail.DtCoPO" [disabled]="StInv.StInvUpdate"></p-radioButton>
+        </div>  
+        <div class="p-col-3 b0">
+          <p-radioButton name="group1" label="เขต" [value]="2" [(ngModel)]="StDetail.DtCoPO" [disabled]="StInv.StInvUpdate"></p-radioButton>
+        </div> 
+        <div class="p-col-3 b0">
+          <p-radioButton name="group1" label="กสธ." [value]="3" [(ngModel)]="StDetail.DtCoPO" [disabled]="StInv.StInvUpdate"></p-radioButton>
+        </div>  
+      </div>
+      <p-footer>
+        <div>
+          <button *ngIf="!StInv.StInvUpdate && !!StDetail.DtDrugID" class="ui-button-raised" style="margin-right: 1em" type="button" pButton icon="pi pi-check" [disabled]="!dialog.form.valid" (click)="saveDetail()" label="ตกลง"></button>
+          <button class="ui-button-raised ui-button-secondary" type="button" pButton icon="pi pi-times" (click)="displayDialog=false" label="ยกเลิก"></button>
+        </div>
+      </p-footer>
+    </p-dialog>
+  </form>
+</div>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <app-left-panel [pageType]="0" [todayItems]="todayItems" [notUpdateItems]="notUpdateItems" (selectId)="selectFromLeftPanel($event)"></app-left-panel>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <app-left-panel [pageType]="0" [todayItems]="todayItems" [notUpdateItems]="notUpdateItems" [isPopUp]="true" (selectId)="selectFromLeftPanel($event)"></app-left-panel>
+</p-sidebar>
+
+<p-dialog #pd header="ข้อมูลวัสดุ" [(visible)]="displayPdItemDialog"
+[contentStyle]="{'overflow-x':'hidden', 'padding':'5px', 'max-height':'95vh'}"
+(onHide)="onPdDialogHide()" [style]="{'max-width': '730px', 'width':'95vw'}"
+[modal]="true" [blockScroll]="true" appendTo="body" [focusOnShow]="false">
+  <app-drug-item *ngIf="showAppPD" [pdId]="pdId" [isDialog]="true"
+   (onClose)="onPdDialogHide()"></app-drug-item>
+</p-dialog>
+
+</ng-container>

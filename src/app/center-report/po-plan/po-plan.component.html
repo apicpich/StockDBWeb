@@ -1,0 +1,341 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+    <!-- <app-left-panel [pageType]="0"></app-left-panel> -->
+  </div>
+  <div class="p-col right-panel" *ngIf="hasPageData">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">แผนจัดซื้อ</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 1 && displayPoPlanData.length" style="margin-top: .5em;font-size: .84em;overflow-x: auto;">
+      <div style="min-width: 1500px">
+        <p-table #pt [value]="displayPoPlanData" [resizableColumns]="true" [scrollable]="!globalService.isPrint"
+        [scrollHeight]="scrollViewPort()" [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false"
+        dataKey="PDrugID" [contextMenu]="cm" [(contextMenuSelection)]="drugSelect">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:4%"><col style="width:10%"><col style="width:3%">
+              <col style="width:4%"><col style="width:4%"><col style="width:4%">
+              <col style="width:4%"><col style="width:4%"><col style="width:4%">
+              <col style="width:4%"><col style="width:5%"><col style="width:3%">
+              <col style="width:4%"><col style="width:4%"><col style="width:4%">
+              <col style="width:4%"><col style="width:4%"><col style="width:4%">
+              <col style="width:4%"><col style="width:4%"><col style="width:5%">
+              <col style="width:5%"><col style="width:5%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv">
+              <th pResizableColumn class="p0" pSortableColumn="PDrugID">รหัส<p-sortIcon field="PDrugID"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="ItemName">รายการ<p-sortIcon field="ItemName"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="PPack">ขนาดบรรจุ<p-sortIcon field="PPack"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="Y3">{{YearPlan-3}}<p-sortIcon field="Y3"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="Y2">{{YearPlan-2}}<p-sortIcon field="Y2"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="Y1">{{YearPlan-1}}<p-sortIcon field="Y1"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="PAmount">ประมาณการ<br>{{YearPlan}}<p-sortIcon field="PAmount"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="YStockX">ยอดคงคลัง<p-sortIcon field="YStockX"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="POAmount">ประมาณการจัดซื้อ<p-sortIcon field="POAmount"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="PPricePack">ราคาต่อขนาด<p-sortIcon field="PPricePack"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="PValue">มูลค่า<p-sortIcon field="PValue"></p-sortIcon></th>
+              <th pResizableColumn class="p0">งวดจัดซื้อ</th>
+              <th pResizableColumn class="p0" style="background-color: #3cf" pSortableColumn="PQ1Value">Q1-แผน<p-sortIcon field="PQ1Value"></p-sortIcon></th>
+              <th pResizableColumn class="p0" style="background-color: #3cf" pSortableColumn="V1">Q1-ซื้อจริง<p-sortIcon field="V1"></p-sortIcon></th>
+              <th pResizableColumn class="p0" style="background-color: #3ff" pSortableColumn="PQ2Value">Q2-แผน<p-sortIcon field="PQ2Value"></p-sortIcon></th>
+              <th pResizableColumn class="p0" style="background-color: #3ff" pSortableColumn="V2">Q2-ซื้อจริง<p-sortIcon field="V2"></p-sortIcon></th>
+              <th pResizableColumn class="p0" style="background-color: #9ff" pSortableColumn="PQ3Value">Q3-แผน<p-sortIcon field="PQ3Value"></p-sortIcon></th>
+              <th pResizableColumn class="p0" style="background-color: #9ff" pSortableColumn="V3">Q3-ซื้อจริง<p-sortIcon field="V3"></p-sortIcon></th>
+              <th pResizableColumn class="p0" style="background-color: #9cf" pSortableColumn="PQ4Value">Q4-แผน<p-sortIcon field="PQ4Value"></p-sortIcon></th>
+              <th pResizableColumn class="p0" style="background-color: #9cf" pSortableColumn="V4">Q4-ซื้อจริง<p-sortIcon field="V4"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="PValue">รวมแผน<p-sortIcon field="PValue"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="VTotal">รวมซื้อจริง<p-sortIcon field="VTotal"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="PRemark">หมายเหตุ<p-sortIcon field="PRemark"></p-sortIcon></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr #row [pSelectableRow]="data" [pContextMenuRow]="data" (dblclick)="onDblClick(data)">
+              <td class="ctx p0">{{data.PDrugID}}</td>
+              <td>{{data.ItemName}}</td>
+              <td class="ctx p0">{{data.PPack}}<br>{{data.DrugUnit}}</td>
+              <td class="ctx p0">{{data.Y3 | number:'1.0-1'}}</td>
+              <td class="ctx p0">{{data.Y2 | number:'1.0-1'}}</td>
+              <td class="ctx p0">{{data.Y1 | number:'1.0-1'}}</td>
+              <td class="ctx p0">{{data.PAmount}}</td>
+              <td class="ctx p0">{{data.YStockX}}</td>
+              <td class="ctx p0">{{data.POAmount}}</td>
+              <td class="ctx p0">{{data.PPricePack | currency:'THB':''}}</td>
+              <td class="rtx" style="padding: 0 3px 0 0">{{data.PValue | currency:'THB':''}}</td>
+              <td class="ctx p0" style="background-color: #f4f4f4">จำนวน<br>มูลค่า</td>
+              <td class="ctx p0">{{data.PQ1}}<br>{{data.PQ1Value | currency:'THB':''}}</td>
+              <td class="ctx p0" style="color: #007ad9">{{data.Q1}}<br>{{data.V1 | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.PQ2}}<br>{{data.PQ2Value | currency:'THB':''}}</td>
+              <td class="ctx p0" style="color: #007ad9">{{data.Q2}}<br>{{data.V2 | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.PQ3}}<br>{{data.PQ3Value | currency:'THB':''}}</td>
+              <td class="ctx p0" style="color: #007ad9">{{data.Q3}}<br>{{data.V3 | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.PQ4}}<br>{{data.PQ4Value | currency:'THB':''}}</td>
+              <td class="ctx p0" style="color: #007ad9">{{data.Q4}}<br>{{data.V4 | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.POAmount}}<br>{{data.PValue | currency:'THB':''}}</td>
+              <td class="ctx p0" style="color: #007ad9">{{data.QTotal}}<br>{{data.VTotal | currency:'THB':''}}</td>
+              <td>{{data.PRemark}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+    <div *ngIf="showReport === 1 && displayPoPlanData.length" class="footer-rpt-btn" style="font-size: .9em">
+      <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer">
+        <div class="p-col-4" style="font-weight: bold">{{displayPoPlanData.length}} รายการ</div>
+        <div class="p-col-4" style="font-weight: bold">ประมาณการ {{sumPValue | currency:'THB':''}}</div>
+        <div class="p-col-4" style="text-align: right;font-weight: bold">มูลค่าซื้อจริง {{sumVTotal | currency:'THB':''}}</div>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 2 && displayPoCatPlanData.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 960px">
+        <p-table #pt [value]="displayPoCatPlanData" [scrollable]="!globalService.isPrint"
+        [scrollHeight]="scrollViewPort()" [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:6%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th rowspan="2" colspan="2">หมวดวัสดุ</th>
+              <th colspan="3">แผนปี/ยอดซื้อ {{getMonthRangeText()}}</th>
+              <th colspan="3">{{QuaterText[0]}}</th>
+              <th colspan="3">{{QuaterText[1]}}</th>
+              <th colspan="3">{{QuaterText[2]}}</th>
+              <th colspan="3">{{QuaterText[3]}}</th>
+            </tr>
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr class="ctx">
+              <td rowspan="2" class="p0">{{getCatname(data.DrugCat)}}</td>
+              <td class="p0">แผน</td>
+              <td class="p0">{{data.RQ0}}</td><td style="text-align: right">{{data.POAmount | currency:'THB':''}}</td><td class="p0">{{data.POAmount / (SumCatOfPOAmount ? SumCatOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ1}}</td><td style="text-align: right">{{data.PV1 | currency:'THB':''}}</td><td class="p0">{{data.PV1 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ2}}</td><td style="text-align: right">{{data.PV2 | currency:'THB':''}}</td><td class="p0">{{data.PV2 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ3}}</td><td style="text-align: right">{{data.PV3 | currency:'THB':''}}</td><td class="p0">{{data.PV3 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ4}}</td><td style="text-align: right">{{data.PV4 | currency:'THB':''}}</td><td class="p0">{{data.PV4 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+            </tr>
+            <tr style="text-align: center;color: #007ad9">
+              <td class="p0">ซื้อจริง</td>
+              <td class="p0">{{data.RIN}}</td><td style="text-align: right">{{data.InAmount | currency:'THB':''}}</td><td class="p0">{{data.InAmount / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ1}}</td><td style="text-align: right">{{data.RV1 | currency:'THB':''}}</td><td class="p0">{{data.RV1 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ2}}</td><td style="text-align: right">{{data.RV2 | currency:'THB':''}}</td><td class="p0">{{data.RV2 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ3}}</td><td style="text-align: right">{{data.RV3 | currency:'THB':''}}</td><td class="p0">{{data.RV3 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ4}}</td><td style="text-align: right">{{data.RV4 | currency:'THB':''}}</td><td class="p0">{{data.RV4 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr class="ctx">
+              <td rowspan="2">รวม</td>
+              <td class="p0">แผน</td>
+              <td class="p0">{{SumCatOfRQ0}}</td><td class="rtx">{{SumCatOfPOAmount | currency:'THB':''}}</td><td class="p0">100</td>
+              <ng-container *ngFor="let i of [0,1,2,3]">
+                <td class="p0">{{SumCatOfPQ[i]}}</td><td class="rtx">{{SumCatOfPV[i] | currency:'THB':''}}</td><td class="p0">{{SumCatOfPV[i] / (SumCatOfPOAmount ? SumCatOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              </ng-container>
+            </tr>
+            <tr class="ctx">
+              <td class="p0" style="color: #007ad9">ซื้อจริง</td>
+              <td class="p0" style="color: #007ad9">{{SumCatOfRIN}}</td><td class="rtx" style="color: #007ad9">{{SumCatOfInAmount | currency:'THB':''}}</td>
+              <td class="p0" style="color: #007ad9">{{SumCatOfInAmount / (SumCatOfPOAmount ? SumCatOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <ng-container *ngFor="let i of [0,1,2,3]">
+                <td class="p0" style="color: #007ad9">{{SumCatOfRQ[i]}}</td><td class="rtx" style="color: #007ad9">{{SumCatOfRV[i] | currency:'THB':''}}</td>
+                <td class="p0" style="color: #007ad9">{{SumCatOfRV[i] / (SumCatOfPOAmount ? SumCatOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              </ng-container>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 3 && displayPoCoPlanData.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 960px">
+        <p-table #pt [value]="displayPoCoPlanData" [scrollable]="!globalService.isPrint"
+         [scrollHeight]="scrollViewPort()" [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:6%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th rowspan="2" colspan="2">การจัดซื้อ</th>
+              <th colspan="3">แผนปี/ยอดซื้อ {{getMonthRangeText()}}</th>
+              <th colspan="3">{{QuaterText[0]}}</th>
+              <th colspan="3">{{QuaterText[1]}}</th>
+              <th colspan="3">{{QuaterText[2]}}</th>
+              <th colspan="3">{{QuaterText[3]}}</th>
+            </tr>
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+              <th>n</th><th>มูลค่า</th><th>%</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr class="ctx">
+              <td rowspan="2" class="p0">{{CoPOName[data.PBudget]}}</td>
+              <td class="p0">แผน</td>
+              <td class="p0">{{data.RQ0}}</td><td class="rtx">{{data.POAmount | currency:'THB':''}}</td><td class="p0">{{data.POAmount / (SumOfPOAmount ? SumOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ1}}</td><td class="rtx">{{data.PV1 | currency:'THB':''}}</td><td class="p0">{{data.PV1 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ2}}</td><td class="rtx">{{data.PV2 | currency:'THB':''}}</td><td class="p0">{{data.PV2 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ3}}</td><td class="rtx">{{data.PV3 | currency:'THB':''}}</td><td class="p0">{{data.PV3 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.PQ4}}</td><td class="rtx">{{data.PV4 | currency:'THB':''}}</td><td class="p0">{{data.PV4 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+            </tr>
+            <tr class="ctx" style="color: #007ad9">
+              <td class="p0">ซื้อจริง</td>
+              <td class="p0">{{data.RIN}}</td><td class="rtx">{{data.InAmount | currency:'THB':''}}</td><td class="p0">{{data.InAmount / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ1}}</td><td class="rtx">{{data.RV1 | currency:'THB':''}}</td><td class="p0">{{data.RV1 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ2}}</td><td class="rtx">{{data.RV2 | currency:'THB':''}}</td><td class="p0">{{data.RV2 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ3}}</td><td class="rtx">{{data.RV3 | currency:'THB':''}}</td><td class="p0">{{data.RV3 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <td class="p0">{{data.RQ4}}</td><td class="rtx">{{data.RV4 | currency:'THB':''}}</td><td class="p0">{{data.RV4 / (data.POAmount ? data.POAmount : 1) * 100 | number:'1.0-1'}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr class="ctx">
+              <td rowspan="2">รวม</td>
+              <td class="p0">แผน</td>
+              <td class="p0">{{SumOfRQ0}}</td><td class="rtx">{{SumOfPOAmount | currency:'THB':''}}</td><td class="p0">100</td>
+              <ng-container *ngFor="let i of [0,1,2,3]">
+                <td class="p0">{{SumOfPQ[i]}}</td><td class="rtx">{{SumOfPV[i] | currency:'THB':''}}</td><td class="p0">{{SumOfPV[i] / (SumOfPOAmount ? SumOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              </ng-container>
+            </tr>
+            <tr class="ctx">
+              <td class="p0" style="color: #007ad9">ซื้อจริง</td>
+              <td class="p0" style="color: #007ad9">{{SumOfRIN}}</td><td class="rtx" style="color: #007ad9">{{SumOfInAmount | currency:'THB':''}}</td>
+              <td class="p0" style="color: #007ad9">{{SumOfInAmount / (SumOfPOAmount ? SumOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              <ng-container *ngFor="let i of [0,1,2,3]">
+                <td class="p0" style="color: #007ad9">{{SumOfRQ[i]}}</td><td class="rtx" style="color: #007ad9">{{SumOfRV[i] | currency:'THB':''}}</td>
+                <td class="p0" style="color: #007ad9">{{SumOfRV[i] / (SumOfPOAmount ? SumOfPOAmount : 1) * 100 | number:'1.0-1'}}</td>
+              </ng-container>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="YearPlan">แผนจัดซื้อปีงบ</label>
+          <p-dropdown inputId="DrugGroup" [options]="YearPlanTable" [(ngModel)]="YearPlan" required [style]="{'width':'100%'}"
+          (onChange)="yearChange = true;setFilterDate()" appendTo="body" name="YearPlan"></p-dropdown>
+        </div>
+        <div class="rtx">
+          <button type="button" pButton class="ui-button-success" label="ค้นหา" icon="pi pi-search"
+          (click)="setFilter()" style="width: auto;" [disabled]="!yearChange"></button>
+        </div>
+        <div style="padding-bottom: 0"><hr></div>
+        <div *ngIf="showReport !== 1">
+          <label for="tdate1">ตั้งแต่เดือน</label>
+          <p-calendar [(ngModel)]="tdate1" view="month" dateFormat="mm/yy" [yearNavigator]="true" appendTo="body"
+          yearRange="2010:2050" [locale]="th" name="tdate1" (ngModelChange)="filterPoCatPlan();filterPoCoPlan()">
+          </p-calendar>
+        </div>
+        <div *ngIf="showReport !== 1">
+          <label for="tdate2">ถึงเดือน</label>
+          <p-calendar [(ngModel)]="tdate2" view="month" dateFormat="mm/yy" [yearNavigator]="true" appendTo="body"
+          yearRange="2010:2050" [locale]="th" name="tdate2" (ngModelChange)="filterPoCatPlan();filterPoCoPlan()">
+          </p-calendar>
+        </div>
+        <div *ngIf="showReport === 1">
+          <label for="DrugCat">หมวดวัสดุ</label>
+          <p-dropdown inputId="DrugCat" [options]="dataService.DrugCatTable" [(ngModel)]="DrugCat"
+          [style]="{'width':'100%'}" (onChange)="filterPoPlan()" appendTo="body" name="DrugCat">
+          </p-dropdown>
+        </div>
+        <div *ngIf="showReport === 1">
+          <label for="DrugName">ชื่อวัสดุ</label>
+          <input type="text" pInputText id="DrugName" name="DrugName" [(ngModel)]="DrugName" (ngModelChange)="filterPoPlan()" />
+        </div>
+        <div *ngIf="showReport === 1">
+          <label for="DtCoPO">แสดงเฉพาะ</label>
+          <p-dropdown inputId="DtCoPO" [options]="CoPOTable" [(ngModel)]="CoPOSelect" optionLabel="CoPOName" 
+          [style]="{'width':'100%'}" (onChange)="DtCoPO = CoPOSelect.CoPOID;filterPoPlan()" appendTo="body" name="DtCoPO">
+          </p-dropdown>
+        </div>
+        <div *ngIf="showReport === 1">
+          <p-checkbox [(ngModel)]="ActiveOnly" label="เฉพาะที่เปิดใช้งาน" binary="true" name="ActiveOnly" (change)="filterPoPlan()"></p-checkbox>
+        </div>
+        <div *ngIf="showReport === 1" style="padding-bottom: 0"><hr></div>
+        <div>
+          <p-radioButton name="group1" label="แผนจัดซื้อ" [value]="1" [(ngModel)]="showReport" (onClick)="reportChange()"></p-radioButton>
+        </div>
+        <div>
+          <p-radioButton name="group1" label="สรุปตามหมวด" [value]="2" [(ngModel)]="showReport" (onClick)="reportChange()"></p-radioButton>
+        </div>
+        <div>
+          <p-radioButton name="group1" label="สรุปตามจัดซื้อ" [value]="3" [(ngModel)]="showReport" (onClick)="reportChange()"></p-radioButton>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- <p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="leftPanelCollapse"
+[autoZIndex]="leftPanelCollapse" [styleClass]="leftPanelCollapse ? 'on-popup' : 'left-side'"
+*ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar> -->
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="hasPageData"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-contextMenu #cm [model]="contextItems"></p-contextMenu>
+
+<p-dialog #pd header="ข้อมูลวัสดุ" [(visible)]="displayPdItemDialog"
+[contentStyle]="{'overflow-x':'hidden', 'padding':'5px', 'max-height':'95vh'}"
+(onHide)="onPdDialogHide()" [style]="{'max-width': '730px', 'width':'95vw'}"
+[modal]="true" [blockScroll]="true" appendTo="body" [focusOnShow]="false">
+  <app-drug-item *ngIf="showAppPD" [pdId]="pdId" [isDialog]="true"
+   (onClose)="onPdDialogHide()"></app-drug-item>
+</p-dialog>

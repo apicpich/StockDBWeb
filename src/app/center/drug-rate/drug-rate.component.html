@@ -1,0 +1,244 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+    <!-- <app-left-panel [pageType]="0"></app-left-panel> -->
+  </div>
+  <div class="p-col right-panel" *ngIf="drugRateTable.length">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">สั่งซื้อจากอัตราเบิก</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="drugRateTable" [resizableColumns]="true" [scrollable]="!globalService.isPrint"
+         [scrollHeight]="scrollViewPort()" [(selection)]="drugItemsSelect" dataKey="DrugID"
+         [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false"
+         [contextMenu]="cm" [(contextMenuSelection)]="selectData">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:3.5em"><col style="width:8%"><col style="width:17%"><col style="width:17%">
+              <col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%">
+              <col style="width:5%"><col style="width:5%"><col style="width:10%"><col style="width:10%"><col style="width:5%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+              <th pResizableColumn pSortableColumn="DrugID">รหัส<p-sortIcon field="DrugID"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="DrugNameText">ชื่อวัสดุ<p-sortIcon field="DrugNameText"></p-sortIcon></th>
+              <th *ngIf="ShowManu === 1" pResizableColumn pSortableColumn="ManuName">ผู้ผลิต<p-sortIcon field="ManuName"></p-sortIcon></th>
+              <th *ngIf="ShowManu !== 1" pResizableColumn pSortableColumn="SupplyName">ผู้จำหน่าย<p-sortIcon field="ManuName"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="Out3">{{getThMonth(2)}}<p-sortIcon field="Out3"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="Out2">{{getThMonth(1)}}<p-sortIcon field="Out2"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="OutRateAvg">เฉลี่ย<p-sortIcon field="OutRateAvg"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="DrugMin">จุดต่ำสุด<p-sortIcon field="DrugMin"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="DrugMax">จุดสูงสุด<p-sortIcon field="DrugMax"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="DrugStock">คงคลัง<p-sortIcon field="DrugStock"></p-sortIcon></th>
+              <th pResizableColumn>ยอดสั่งซื้อ</th>
+              <th pResizableColumn>จำนวนที่สั่งซื้อ</th>
+              <th pResizableColumn class="p0">หน่วย</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr #row [pSelectableRow]="data" [pContextMenuRow]="data" (dblclick)="onDblClick(data)"
+              [ngClass]="{'inpo': getINPOColor(data.INPO)}">
+              <td class="ctx"><p-tableCheckbox [value]="data"></p-tableCheckbox></td>
+              <td style="padding: 4px">{{data.DrugID}}{{data.OrderNeed ? '*' : ''}}</td>
+              <td>{{data.DrugNameText}}</td>
+              <td *ngIf="ShowManu === 1">{{data.ManuName}}</td>
+              <td *ngIf="ShowManu !== 1">{{data.SupplyName}}</td>
+              <td class="ctx p0">{{data.Out3}}</td>
+              <td class="ctx p0">{{data.Out2}}</td>
+              <td class="ctx p0">{{data.OutRateAvg}}</td>
+              <td class="ctx p0">{{data.DrugMin}}</td>
+              <td class="ctx p0">{{data.DrugMax}}</td>
+              <td class="ctx p0">{{data.DrugStock}}</td>
+              <td class="ctx">{{data.EAmount}} x {{data.DrugPack}}</td>
+              <td class="ctx" pEditableColumn>
+                <p-cellEditor>
+                    <ng-template pTemplate="input">
+                      <div style="display: inline-flex">
+                        <input class="table-input" style="text-align: right;width: 50%" type="number" pInputText required min="1" [(ngModel)]="data.OAmount" />
+                        <span style="margin: 5px 2px">x</span>
+                        <input class="table-input" style="text-align: left;width: 40%" type="number" pInputText required min="1" [(ngModel)]="data.OPack" />
+                      </div>
+                    </ng-template>
+                    <ng-template pTemplate="output">
+                        {{data.OAmount}} x {{data.OPack}}
+                    </ng-template>
+                </p-cellEditor>
+              </td>
+              <td style="text-align: center;padding: 0">{{data.DrugUnit}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <div class="footer-rpt-btn" style="font-size: .9em">
+      <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer">
+        <div class="p-col-5" style="text-align: left">
+          <button type="button" class="ui-button-success" pButton icon="pi pi-th-large" (click)="createPO()" label="สร้างใบสั่งซื้อ"></button>
+        </div>
+        <div class="p-col-7" style="text-align: right;font-weight: bold">เลือก/รวม &nbsp;&nbsp; {{drugItemsSelect.length | number:'1.0'}} / {{drugRateTable.length | number:'1.0'}} รายการ</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="DrugID">รหัสพัสดุ</label>
+          <input type="text" pInputText id="DrugID" name="DrugID" [(ngModel)]="DrugID" />
+        </div>
+        <div>
+          <label for="DrugName">ชื่อวัสดุ</label>
+          <input type="text" pInputText id="DrugName" name="DrugName" [(ngModel)]="DrugName" />
+        </div>
+        <div>
+          <label for="DrugCat">หมวดวัสดุ</label>
+          <p-dropdown inputId="DrugCat" [options]="dataService.DrugCatTable" [(ngModel)]="DrugCat" 
+          [style]="{'width':'100%'}" appendTo="body" name="DrugCat">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugGroup">กลุ่มวัสดุ</label>
+          <p-dropdown inputId="DrugGroup" [options]="dataService.DrugGroupTable" [(ngModel)]="DrugGroup" 
+          [style]="{'width':'100%'}" appendTo="body" name="DrugGroup">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugManu">ผู้ผลิต</label>
+          <p-dropdown inputId="DrugManu" [options]="dataService.SupplierTable" [(ngModel)]="DrugManu"
+          [virtualScroll]="true" [itemSize]="31" [filter]="true" filterBy="label,value"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugManu">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugSupply">ผู้จำหน่าย</label>
+          <p-dropdown inputId="DrugSupply" [options]="dataService.SupplierTable" [(ngModel)]="DrugSupply"
+          [virtualScroll]="true" [itemSize]="31" [filter]="true" filterBy="label,value"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugSupply">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugType">ประเภท</label>
+          <p-dropdown inputId="DrugType" [options]="dataService.DrugTypeTable" [(ngModel)]="DrugType"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugType">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="CoPO">จัดซื้อร่วม</label>
+          <p-dropdown inputId="CoPO" [options]="dataService.CoPOTable" [(ngModel)]="CoPO"
+          [style]="{'width':'100%'}" appendTo="body" name="CoPO">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="RateState">ปริมาณคลัง</label>
+          <div class="p-grid p-nogutter">
+            <div class="p-col-fixed" style="width: 50px;margin-right: 5px">
+              <p-dropdown [options]="stockOperTable" [(ngModel)]="stockOper" [style]="{'width':'100%'}" name="stockOper">
+              </p-dropdown>
+            </div>
+            <div class="p-col">
+              <p-dropdown inputId="RateState" [options]="stockState" [(ngModel)]="RateState"
+              [style]="{'width':'100%'}" appendTo="body" name="RateState">
+              </p-dropdown>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="OrderNeedOpt" label="รวมรายการที่ต้องสั่งซื้อ" binary="true" name="OrderNeedOpt"></p-checkbox>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="AllList" label="รวมรายการที่ปิดใช้งาน" binary="true" name="AllList"></p-checkbox>
+        </div>
+        <div class="rtx">
+          <button type="button" pButton class="ui-button-success" label="ค้นหา" icon="pi pi-search"
+          style="width: auto;" (click)="setFilter()" [disabled]="rptForm.form.invalid"></button>
+        </div>
+        <div style="padding-bottom: 0"><hr></div>
+        <div>
+          <div>แสดง</div>
+          <p-radioButton name="group1" label="ผู้ผลิต" [value]="1" [(ngModel)]="ShowManu"></p-radioButton>
+          <span style="margin-right: 10px"></span>
+          <p-radioButton name="group1" label="ผู้จำหน่าย" [value]="2" [(ngModel)]="ShowManu"></p-radioButton>
+        </div>
+        <div>
+          <label for="SetPOMask">รายการสั่งซื้อ</label>
+          <p-dropdown inputId="SetPOMask" [options]="SetPOMaskTable" [(ngModel)]="SetPOMask" [style]="{'width':'100%'}"
+            (onChange)="setPoMask()" name="SetPOMask">
+          </p-dropdown>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="!!drugRateTable.length"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<div *ngIf="drugItemsSelect.length">
+  <form #dialog="ngForm">
+    <p-dialog header="สร้างใบสั่งซื้อ" [style]="{'max-width':'400px'}" [(visible)]="displayDialog"
+     [contentStyle]="{'overflow':'visible'}" [modal]="true">
+      <div class="p-grid ui-fluid">
+        <div class="p-col-12 b0">
+          <label for="PONo">เลขที่ใบสั่งซื้อ</label>
+          <input type="text" pInputText id="PONo" name="PONo" required [(ngModel)]="PONo" />
+        </div>
+        <div class="p-col-12 p-col-align-end">
+          <label for="StInvCust">ผู้จำหน่าย</label>
+          <div>
+            <p-dropdown inputId="StInvCust" [options]="dataService.SupplierTable" [(ngModel)]="StInvCust"
+            [virtualScroll]="true" [itemSize]="31" [filter]="true" filterBy="label,value" required
+            [style]="{'width':'100%'}" appendTo="body" name="StInvCust">
+            </p-dropdown>
+          </div>  
+        </div>
+      </div>
+      <p-footer>
+        <div >
+          <button class="ui-button-raised" style="margin-right: 1em" type="button" pButton icon="pi pi-check"
+           [disabled]="!dialog.form.valid" (click)="savePO()" label="สร้างใบสั่งซื้อ"></button>
+          <button class="ui-button-raised ui-button-secondary" type="button" pButton icon="pi pi-times"
+           (click)="displayDialog=false" label="ยกเลิก"></button>
+        </div>
+      </p-footer>
+    </p-dialog>
+  </form>
+</div> 
+
+<p-contextMenu #cm [model]="contextItems"></p-contextMenu>
+
+<p-dialog #pd header="ข้อมูลวัสดุ" [(visible)]="displayPdItemDialog"
+[contentStyle]="{'overflow-x':'hidden', 'padding':'5px', 'max-height':'95vh'}"
+(onHide)="onPdDialogHide()" [style]="{'max-width': '730px', 'width':'95vw'}"
+[modal]="true" [blockScroll]="true" appendTo="body" [focusOnShow]="false">
+  <app-drug-item *ngIf="showAppPD" [pdId]="pdId" [isDialog]="true"
+   (onClose)="onPdDialogHide()"></app-drug-item>
+</p-dialog>

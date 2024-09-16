@@ -1,0 +1,207 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+    <!-- <app-left-panel [pageType]="0"></app-left-panel> -->
+  </div>
+  <div class="p-col right-panel" *ngIf="hasPageData">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">สรุปประจำเดือน</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 1 && sumAllMonth.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="sumAllMonth" [resizableColumns]="true" [scrollable]="!globalService.isPrint" 
+        [scrollHeight]="scrollViewPort()" [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:20%"><col style="width:20%"><col style="width:15%">
+              <col style="width:15%"><col style="width:15%"><col style="width:15%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn>หมวด</th>
+              <th pResizableColumn>รายการ</th>
+              <th pResizableColumn>ยอดยกมา</th>
+              <th pResizableColumn>รับเข้า</th>
+              <th pResizableColumn>จ่ายออก</th>
+              <th pResizableColumn>คงเหลือ</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr>
+              <td>{{data.CatName}}</td>
+              <td [style.color]="departColor(data.Mode)">{{data.Depart}}</td>
+              <td class="rtx">{{data.SumOfStartAmount ? (data.SumOfStartAmount | currency:'THB':'') : ''}}</td>
+              <td class="rtx">{{data.SumOfInAmount ? (data.SumOfInAmount | currency:'THB':'') : ''}}</td>
+              <td class="rtx">{{data.SumOfOutAmount ? (data.SumOfOutAmount | currency:'THB':'') : ''}}</td>
+              <td></td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="2" style="text-align: center">รวมทุกประเภท</td>
+              <td class="rtx">{{SumStart | currency:'THB':''}}</td>
+              <td class="rtx">{{SumIN | currency:'THB':''}}</td>
+              <td class="rtx">{{SumOut | currency:'THB':''}}</td>
+              <td class="rtx">{{SumStart + SumIN - SumOut | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 2 && sumOfMonth.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 700px">
+        <p-table [value]="sumOfMonth" [resizableColumns]="true" [scrollable]="!globalService.isPrint" 
+        [scrollHeight]="scrollViewPort()" 
+        [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="caption">
+            <div style="font-size: 1.4em">สรุปงานคลังวัสดุ</div>
+          </ng-template>
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:24%"><col style="width:19%"><col style="width:19%">
+              <col style="width:19%"><col style="width:19%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn>รายการ</th>
+              <th pResizableColumn>ยอดยกมา</th>
+              <th pResizableColumn>รับเข้า</th>
+              <th pResizableColumn>จ่ายออก</th>
+              <th pResizableColumn>คงเหลือ</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data let-columns="columns">
+            <tr>
+              <td>{{data.CatName}}</td>
+              <td pEditableColumn>
+                <p-cellEditor>
+                  <ng-template pTemplate="input">
+                    <input style="text-align: right" type="text" pInputText required
+                    [ngModel]="data.SumOfStartAmount | currency:'THB':''" (blur)="setTotalSumOfMonth(sumOfMonth)"
+                    (change)="data.SumOfStartAmount = +($event.target.value);"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" />
+                  </ng-template>
+                  <ng-template pTemplate="output"><div class="rtx">{{data.SumOfStartAmount | currency:'THB':''}}</div></ng-template>
+                </p-cellEditor>
+              </td>
+              <td pEditableColumn>
+                <p-cellEditor>
+                  <ng-template pTemplate="input">
+                    <input style="text-align: right" type="text" pInputText required
+                    [ngModel]="data.SumOfInAmount | currency:'THB':''" (blur)="setTotalSumOfMonth(sumOfMonth)"
+                    (change)="data.SumOfInAmount = +($event.target.value);"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" />
+                  </ng-template>
+                  <ng-template pTemplate="output"><div class="rtx">{{data.SumOfInAmount | currency:'THB':''}}</div></ng-template>
+                </p-cellEditor>
+              </td>
+              <td pEditableColumn>
+                <p-cellEditor>
+                  <ng-template pTemplate="input">
+                    <input style="text-align: right" type="text" pInputText required
+                    [ngModel]="data.OutAmount2 | currency:'THB':''" (blur)="setTotalSumOfMonth(sumOfMonth)"
+                    (change)="data.OutAmount2 = +($event.target.value);"
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" />
+                  </ng-template>
+                  <ng-template pTemplate="output"><div class="rtx">{{data.OutAmount2 | currency:'THB':''}}</div></ng-template>
+                </p-cellEditor>
+              </td>
+              <td class="rtx">{{data.SumOfEndAmount | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr>
+              <td class="ctx">รวม</td>
+              <td class="rtx">{{sumBefore | currency:'THB':''}}</td>
+              <td class="rtx">{{sumIN | currency:'THB':''}}</td>
+              <td class="rtx">{{sumOUT | currency:'THB':''}}</td>
+              <td class="rtx">{{sumAfter | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+      <div style="display: inline-flex;width: 100%;min-width: 480px;margin-top: 2em;justify-content: center;">
+        <div style="margin-top: 8px">อัตราปริมาณคงคลัง (คำนวณจากการเบิกย้อนหลัง {{outMonthRate.CountMonth}} เดือน) = &nbsp;&nbsp; </div>
+        <div class="p-grid p-nogutter" style="text-align: center;width: 100px">
+          <div class="p-col-12" style="border-bottom: 1px solid #333333">{{sumAfter | currency:'THB':''}}</div>
+          <div class="p-col-12">{{outMonthRate.SumYear / outMonthRate.CountMonth | currency:'THB':''}}</div>
+        </div>
+        <div style="margin-top: 8px">&nbsp;&nbsp; = {{sumAfter / (outMonthRate.SumYear / outMonthRate.CountMonth) | number:'1.0-2'}} เดือน</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="tdate">เดือนประมวลผล</label>
+          <p-calendar [(ngModel)]="tdate" view="month" dateFormat="mm/yy" [yearNavigator]="true"
+           yearRange="2010:2050" [locale]="th" name="tdate" appendTo="body">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="DrugCat">หมวดวัสดุ</label>
+          <p-dropdown inputId="DrugCat" [options]="dataService.DrugCatTable" [(ngModel)]="DrugCat"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugCat">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugGroup">กลุ่มวัสดุ</label>
+          <p-dropdown inputId="DrugGroup" [options]="dataService.DrugGroupTable" [(ngModel)]="DrugGroup"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugGroup">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugType">ประเภท</label>
+          <p-dropdown inputId="DrugType" [options]="dataService.DrugTypeTable" [(ngModel)]="DrugType"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugType">
+          </p-dropdown>
+        </div>
+        <div class="rtx">
+          <button type="button" pButton class="ui-button-success" label="ค้นหา" icon="pi pi-search"
+          style="width: auto;" (click)="setFilter()" [disabled]="rptForm.form.invalid"></button>
+        </div>
+        <div style="padding-bottom: 0"><hr></div>
+        <div>
+          <p-radioButton name="group1" label="แสดงหน่วยงาน" [value]="1" [(ngModel)]="showReport"
+           (onClick)="reportChange()"></p-radioButton>
+        </div>
+        <div>
+          <p-radioButton name="group1" label="รายงานสรุป" [value]="2" [(ngModel)]="showReport"
+           (onClick)="reportChange()"></p-radioButton>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="hasPageData"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>

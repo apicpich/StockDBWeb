@@ -1,0 +1,25 @@
+tr.inpo:not(.ui-state-highlight) {
+  color: #169117;
+}
+
+.triangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  border-width: 0 1em 1em 0;
+  border-color: transparent #007ad9 transparent transparent;
+  right: 0;
+  top: 0;
+}
+
+.table-input::-webkit-outer-spin-button,
+.table-input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none !important;
+    margin: 0 !important; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.table-input {
+    -moz-appearance:textfield !important; /* Firefox */
+}

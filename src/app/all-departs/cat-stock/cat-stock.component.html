@@ -1,0 +1,135 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+  </div>
+  <div class="p-col right-panel" *ngIf="data.length">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">รายงานวัสดุคงเหลือ</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="data.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [columns]="cols" [value]="data" [resizableColumns]="true" [scrollable]="!globalService.isPrint"
+          [scrollHeight]="scrollViewPort()" [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:8%"><col style="width:20%">
+              <col *ngFor="let col of colsCountArray">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header" let-columns>
+            <tr class="rtinv">
+              <th *ngFor="let col of columns" pResizableColumn [pSortableColumn]="col.field">
+                {{col.header}}
+                <p-sortIcon [field]="col.field"></p-sortIcon>
+              </th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data let-columns="columns">
+            <tr>
+              <td *ngFor="let col of columns;index as i" [ngClass]="{'rtx': i > 1}">
+                {{i > 1 ? (data[col.field] | currency:'THB':'') : (data[col.field])}}
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer" let-columns>
+            <tr>
+              <td *ngFor="let col of columns;index as j" [ngClass]="{'rtx': j > 1}">
+                {{j > 1 ? (dataTotals[col.field] | currency:'THB':'') : (dataTotals[col.field])}}
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+    <div class="footer-rpt-btn" *ngIf="data.length" style="font-size: .9em;">
+      <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer">
+        <div class="p-col-12 ltx" style="font-weight: bold">รวม = {{data.length | number:'1.0'}} = หน่วยงาน</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="depart">หน่วยงาน</label>
+          <p-dropdown inputId="depart" [options]="departSelectItems" [(ngModel)]="depart"
+          [style]="{'width':'100%'}" appendTo="body" name="depart">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="departType">ประเภทหน่วยงาน</label>
+          <p-dropdown inputId="departType" [options]="globalService.departTypeLists" [(ngModel)]="departType"
+          [style]="{'width':'100%'}" appendTo="body" name="departType">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="catId">หมวดวัสดุ</label>
+          <p-dropdown inputId="catId" [options]="dataService.DrugCatTable" [(ngModel)]="query.catId"
+          [style]="{'width':'100%'}" appendTo="body" name="catId">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="last_in">รับเข้าล่าสุด</label>
+          <p-calendar [(ngModel)]="query.last_in" dateFormat="dd/mm/yy" [locale]="th" name="last_in" appendTo="body"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="last_out">เบิกออกล่าสุด</label>
+          <p-calendar [(ngModel)]="query.last_out" dateFormat="dd/mm/yy" [locale]="th" name="last_out" appendTo="body"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.has_exp_date" name="has_exp_date"
+          [label]="query.has_exp_date === null ? 'รวมที่หมดอายุ' : 'ที่หมดอายุ'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.near_exp_date" name="near_exp_date"
+          [label]="query.near_exp_date === null ? 'รวมที่ใกล้หมดอายุ' : 'ที่ใกล้หมดอายุ'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <label for="exp_period">จำนวนวันก่อนหมดอายุ</label>
+          <div class="ui-inputgroup">
+            <input type="number" id="exp_period" pInputText 
+            style="max-width: 138px;text-align: center;width: 50px"
+            [(ngModel)]="query.exp_period" min="0" name="exp_period" required>
+            <span class="ui-inputgroup-addon">วัน</span>
+          </div>
+        </div>
+        <div class="rtx">
+          <button type="button" class="ui-button-success" pButton icon="pi pi-search" style="width: auto;"
+          label="ค้นหา" [disabled]="rptForm.form.invalid || !isReady" (click)="selectFromLeftPanel()"></button>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="!!data.length"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>

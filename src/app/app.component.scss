@@ -1,0 +1,74 @@
+.main-header {
+  font-size: 1.1em;
+  background-color: var(--theme-color);
+  color: white;
+  padding: .5em;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100
+}
+
+.logo {
+  border: 1px solid white;
+  border-radius: 10px;
+  width: 1.45em;
+  text-align: center;
+  margin-right: 5px;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.home-link {
+  cursor: pointer;
+}
+.home-link:focus {
+  outline: none;
+}
+
+.noti-circle {
+  border-radius: 50%;
+  font-size: 0.8em;
+  width: 30px;
+  height: 30px;
+  margin-top: -5px;
+  margin-right: .5em;
+}
+.btn-green {
+  background-color: rgb(0, 77, 6);
+  border-color: rgb(0, 77, 6);
+}
+.btn-orange {
+  background-color: #ff5722;
+  border-color: #ff5722;
+}
+:host ::ng-deep .noti-circle span.ui-button-text.ui-clickable {
+  padding: 0;
+}
+
+.op-container{
+  width: 90vw;
+  max-width: 350px;
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+.flip-alert{
+  animation: flip 2s 2;
+}
+@keyframes flip {
+  0% {
+      transform:rotateY(0deg);
+  }
+  50% {
+    transform:rotateY(270deg);
+  }
+  100% {
+      transform:rotateY(360deg);
+  }
+}
+
+.hilight {
+  background-color: #ffe3e3;
+}

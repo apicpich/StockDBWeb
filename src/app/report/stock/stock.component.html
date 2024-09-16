@@ -1,0 +1,241 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+  </div>
+  <div class="p-col right-panel" *ngIf="data.length">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">รายงานวัสดุคงเหลือ</div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="showReport === 1 && data.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="data" [resizableColumns]="true" selectionMode="single" [scrollable]="!globalService.isPrint"
+          [scrollHeight]="scrollViewPort()" [selection]="dataSelect" dataKey="DrugID"
+          [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false"
+          [contextMenu]="cm" contextMenuSelectionMode="joint" (onContextMenuSelect)="selectRow($event)"
+          (onRowSelect)="selectRow($event)" (onRowUnselect)="rowHasSelect=false" rowExpandMode="single">
+          <ng-template pTemplate="colgroup">
+            <colgroup>
+              <col style="width:9%"><col style="width:25%"><col style="width:8%">
+              <col style="width:8%"><col style="width:8%"><col style="width:7%">
+              <col style="width:7%"><col style="width:7%"><col style="width:11%">
+              <col style="width:10%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn pSortableColumn="DrugID">รหัส<p-sortIcon field="DrugID"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="pd_name">ชื่อวัสดุ<p-sortIcon field="pd_name"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="DrugLastIn">รับล่าสุด<p-sortIcon field="DrugLastIn"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="DrugLastOut">เบิกล่าสุด<p-sortIcon field="DrugLastOut"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="DrugExp">วันหมดอายุ<p-sortIcon field="DrugExp"></p-sortIcon></th>
+              <th pResizableColumn>ต้นทุนเฉลี่ย</th>
+              <th pResizableColumn>ต้นทุนล่าสุด</th>
+              <th pResizableColumn>จุดต่ำสุด</th>
+              <th pResizableColumn>คงเหลือ</th>
+              <th pResizableColumn>มูลค่าคงคลัง</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data let-expanded="expanded">
+            <tr #row [pSelectableRow]="data" [pContextMenuRow]="data" (dblclick)="onDblClick($event)">
+              <td style="padding: 0;white-space: nowrap;">
+                <a href="#" [pRowToggler]="data">
+                  <i [ngClass]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+                </a>
+                {{data.DrugID}}
+              </td>
+              <td>{{data.pd_name}}</td>
+              <td class="ctx p0">{{data.DrugLastIn | shortDate}}</td>
+              <td class="ctx p0">{{data.DrugLastOut | shortDate}}</td>
+              <td class="ctx p0" [style.color]="isExp(data.DrugExp)">{{data.DrugExp | shortDate}}</td>
+              <td class="rtx">{{data.DrugCost | currency:'THB':''}}</td>
+              <td class="rtx">{{data.DrugCostUpdate | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.DrugMin | number:'1.0-2'}}</td>
+              <td class="ctx p0">{{data.DrugStock | number:'1.0-2'}} {{data.pd_unit}}</td>
+              <td class="rtx">{{data.DrugValue | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="rowexpansion" let-data>
+            <tr *ngIf="data.DrugRemark">
+              <td colspan="10" style="padding: .25em .5em;background-color: #ffe;">
+                <b>หมายเหตุ: &nbsp;</b>{{data.DrugRemark}}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="10" style="background-color: #ffe;">
+                <table border="1" class="expand">
+                  <tr>
+                    <th style="width:9%">วันที่รับ</th><th style="width:9%">เลขอ้างอิง</th><th style="width:22%">ผู้จำหน่าย</th>
+                    <th style="width:10%">Lot No.</th><th style="width:9%">วันหมดอายุ</th><th style="width:13%">จำนวนรับ</th>
+                    <th style="width:9%">ต้นทุน/pack</th><th style="width:9%">คงเหลือ</th><th style="width:10%">มูลค่า</th>
+                  </tr>
+                  <tr class="detail" *ngFor="let item of getDetail(data.DrugID)">
+                    <td class="ctx p0">{{item.DrugDDate | shortDate}}</td>
+                    <td class="ctx p0">{{item.DrugInvID}}</td>
+                    <td>{{item.SupplierName}}</td>
+                    <td class="ctx p0">{{item.DrugDLot}}</td>
+                    <td class="ctx p0" [style.color]="isExp(item.DrugDExp)">{{item.DrugDExp | shortDate}}</td>
+                    <td class="ctx p0">{{item.DrugDAmount | number:'1.0-2'}} x {{item.DrugDPack}} {{data.pd_unit}}</td>
+                    <td class="rtx">{{item.DrugDCost | currency:'THB':''}}</td>
+                    <td class="ctx p0">{{item.DrugDStock | number:'1.0-2'}}</td>
+                    <td class="rtx">{{(item.DrugDStock * item.DrugDCost / item.DrugDPack) | currency:'THB':''}}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+    <div class="footer-rpt-btn" *ngIf="showReport === 1 && data.length" style="font-size: .9em;">
+      <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer">
+        <div class="p-col-3 ltx" style="font-weight: bold">= {{data.length | number:'1.0'}} =</div>
+        <div class="p-col-8 rtx" style="font-weight: bold">รวมมูลค่า {{dataTotal | currency:'THB':''}}</div>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 2 && data.length" style="margin-top: 2.5em;font-size: 1em;overflow-x: auto;">
+      <div style="min-width: 290px;max-width: 550px;margin: auto;">
+        <p-table [value]="catReportLists" [resizableColumns]="true">
+          <ng-template pTemplate="colgroup">
+            <colgroup>
+              <col style="width:15%"><col style="width:60%"><col style="width:25%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th style="font-weight: bold;" pResizableColumn pSortableColumn="catId">หมวด<p-sortIcon field="catId"></p-sortIcon></th>
+              <th style="font-weight: bold;" pResizableColumn pSortableColumn="catName">รายการ<p-sortIcon field="catName"></p-sortIcon></th>
+              <th style="font-weight: bold;" pResizableColumn pSortableColumn="total">มูลค่า<p-sortIcon field="total"></p-sortIcon></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr #row>
+              <td class="ctx p0">{{data.catId}}</td>
+              <td>{{data.catName}}</td>
+              <td class="rtx">{{data.total | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="2" class="ctx">รวมมูลค่า</td>
+              <td class="rtx">{{dataTotal | currency:'THB':''}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="drugSearch">รหัส/ชื่อวัสดุ</label>
+          <input type="text" id="drugSearch" name="drugSearch" pInputText [(ngModel)]="drugSearch">
+        </div>
+        <div>
+          <label for="catId">หมวดวัสดุ</label>
+          <p-dropdown inputId="catId" [options]="dataService.DrugCatTable" [(ngModel)]="catId"
+          [style]="{'width':'100%'}" appendTo="body" name="catId">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="groupId">กลุ่มวัสดุ</label>
+          <p-dropdown inputId="groupId" [options]="dataService.DrugGroupTable" [(ngModel)]="groupId"
+          [style]="{'width':'100%'}" appendTo="body" name="groupId"
+          [itemSize]="31" [virtualScroll]="true" [filter]="true" filterBy="label,value">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="last_in">รับเข้าล่าสุด</label>
+          <p-calendar [(ngModel)]="query.last_in" dateFormat="dd/mm/yy" [locale]="th" name="last_in" appendTo="body"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="last_out">เบิกออกล่าสุด</label>
+          <p-calendar [(ngModel)]="query.last_out" dateFormat="dd/mm/yy" [locale]="th" name="last_out" appendTo="body"
+          showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="query.pd_min" binary="true" name="pd_min" label="ต่ำกว่าจุดต่ำสุด"></p-checkbox>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="query.pd_max" binary="true" name="pd_max" label="สูงกว่าจุดสูงสุด"></p-checkbox>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="query.has_stock" binary="true" name="has_stock" label="มีของในคลัง"></p-checkbox>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.not_active" name="not_active"
+          [label]="query.not_active === null ? 'รวมยกเลิกใช้งาน' : 'ยกเลิกใช้งาน'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.has_exp_date" name="has_exp_date"
+          [label]="query.has_exp_date === null ? 'รวมที่หมดอายุ' : 'ที่หมดอายุ'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.near_exp_date" name="near_exp_date"
+          [label]="query.near_exp_date === null ? 'รวมที่ใกล้หมดอายุ' : 'ที่ใกล้หมดอายุ'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <label for="exp_period">จำนวนวันก่อนหมดอายุ</label>
+          <div class="ui-inputgroup">
+            <input type="number" id="exp_period" pInputText 
+            style="max-width: 138px;text-align: center;width: 50px"
+            [(ngModel)]="query.exp_period" min="0" name="exp_period" required>
+            <span class="ui-inputgroup-addon">วัน</span>
+          </div>
+        </div>
+        <div class="rtx">
+          <button type="button" class="ui-button-success" pButton icon="pi pi-search" style="width: auto;"
+          label="ค้นหา" [disabled]="rptForm.form.invalid || !isReady" (click)="selectFromLeftPanel()"></button>
+        </div>
+        <div style="padding-bottom: 0"><hr></div>
+        <div>
+          <p-radioButton name="group1" label="แสดงรายการ" [value]="1" [(ngModel)]="showReport"></p-radioButton>
+        </div>
+        <div>
+          <p-radioButton name="group1" label="สรุปยอดตามหมวด" [value]="2" [(ngModel)]="showReport"></p-radioButton>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<p-contextMenu #cm [model]="contextItems"></p-contextMenu>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="!!data.length"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-dialog #pd header="ข้อมูลวัสดุ" [(visible)]="displayPdItemDialog"
+[contentStyle]="{'overflow-x':'hidden', 'padding':'5px', 'max-height':'95vh'}"
+(onHide)="onPdDialogHide()" [style]="{'max-width': '730px', 'width':'95vw'}"
+[modal]="true" [blockScroll]="true" appendTo="body" [focusOnShow]="false">
+  <app-product *ngIf="showAppPD" [pdId]="pdId" [isDialog]="true"
+  (onSave)="updateSelect($event)" (onClose)="onPdDialogHide()"></app-product>
+</p-dialog>

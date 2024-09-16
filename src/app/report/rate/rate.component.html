@@ -1,0 +1,211 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+  </div>
+  <div class="p-col right-panel" *ngIf="data.length">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">รายงานอัตราการเบิก</div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="data.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="data" [resizableColumns]="true" [scrollable]="!globalService.isPrint"
+          [scrollHeight]="scrollViewPort()" [(selection)]="dataSelect" dataKey="DrugID"
+          [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false"
+          [contextMenu]="cm" [(contextMenuSelection)]="selectData">
+          <ng-template pTemplate="colgroup">
+            <colgroup>
+              <col style="width:8%"><col style="width:17%"><col style="width:17%">
+              <col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%">
+              <col style="width:5%"><col style="width:5%"><col style="width:10%"><col style="width:10%">
+              <col style="width:5%"><col style="width:3%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn pSortableColumn="DrugID">รหัส<p-sortIcon field="DrugID"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="pd_name">ชื่อวัสดุ<p-sortIcon field="pd_name"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="SupplyName">ผู้จำหน่าย<p-sortIcon field="ManuName"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="Out3">{{getThMonth(2)}}<p-sortIcon field="Out3"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="Out2">{{getThMonth(1)}}<p-sortIcon field="Out2"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="OutRateAvg">เฉลี่ย<p-sortIcon field="OutRateAvg"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="DrugMin">จุดต่ำสุด<p-sortIcon field="DrugMin"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="DrugMax">จุดสูงสุด<p-sortIcon field="DrugMax"></p-sortIcon></th>
+              <th pResizableColumn class="p0" pSortableColumn="DrugStock">คงคลัง<p-sortIcon field="DrugStock"></p-sortIcon></th>
+              <th pResizableColumn>ยอดจัดหา</th>
+              <th pResizableColumn>จำนวนที่ขอเบิก</th>
+              <th pResizableColumn class="p0">หน่วย</th>
+              <th class="p0"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data let-rowIndex="rowIndex">
+            <tr #row [pSelectableRow]="data" [pContextMenuRow]="data" (dblclick)="onDblClick(data)"
+            [ngClass]="{'inpo': data.INPO}">
+              <td style="padding: 4px">{{data.DrugID}}</td>
+              <td>{{data.pd_name}}</td>
+              <td>{{data.SupplierName}}</td>
+              <td class="ctx p0">{{data.Out3}}</td>
+              <td class="ctx p0">{{data.Out2}}</td>
+              <td class="ctx p0">{{data.OutRateAvg}}</td>
+              <td class="ctx p0">{{data.DrugMin}}</td>
+              <td class="ctx p0">{{data.DrugMax}}</td>
+              <td class="ctx p0">{{data.DrugStock}}</td>
+              <td class="ctx">{{data.EAmount}} x {{data.DrugPack}}</td>
+              <td class="ctx" pEditableColumn>
+                <p-cellEditor>
+                    <ng-template pTemplate="input">
+                      <div style="display: inline-flex">
+                        <input class="table-input" style="text-align: right;width: 50%" type="number" pInputText required min="1" [(ngModel)]="data.OAmount" />
+                        <span style="margin: 5px 2px">x</span>
+                        <input class="table-input" style="text-align: left;width: 40%" type="number" pInputText required min="1" [(ngModel)]="data.OPack" />
+                      </div>
+                    </ng-template>
+                    <ng-template pTemplate="output">
+                        {{data.OAmount}} x {{data.OPack}}
+                    </ng-template>
+                </p-cellEditor>
+              </td>
+              <td class="ctx p0" style="position: relative;background-clip: padding-box">
+                <div [ngClass]="{'triangle': data.OrderNeed}"></div>
+                {{data.pd_unit}}
+              </td>
+              <td class="ctx p0"><p-tableCheckbox [value]="data" [index]="rowIndex"></p-tableCheckbox></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+    <div class="footer-rpt-btn" style="font-size: .9em;height: 36px;">
+      <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer">
+        <div class="p-col-5 ltx">
+          <button *ngIf="isUserDepart && globalService.user.role !== 99" type="button"
+           class="ui-button-success" pButton icon="pi pi-th-large"
+           (click)="openDialog()" [disabled]="!dataSelect.length" label="สร้างใบขอเบิก"></button>
+        </div>
+        <div class="p-col-7" style="text-align: right;font-weight: bold">
+          เลือก/รวม &nbsp;&nbsp; {{dataSelect.length | number:'1.0'}} / {{data.length | number:'1.0'}} รายการ
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="drugSearch">รหัส/ชื่อวัสดุ</label>
+          <input type="text" id="drugSearch" name="drugSearch" pInputText [(ngModel)]="drugSearch">
+        </div>
+        <div>
+          <label for="catId">หมวดวัสดุ</label>
+          <p-dropdown inputId="catId" [options]="dataService.DrugCatTable" [(ngModel)]="catId"
+          [style]="{'width':'100%'}" appendTo="body" name="catId">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="groupId">กลุ่มวัสดุ</label>
+          <p-dropdown inputId="groupId" [options]="dataService.DrugGroupTable" [(ngModel)]="groupId"
+          [style]="{'width':'100%'}" appendTo="body" name="groupId"
+          [itemSize]="31" [virtualScroll]="true" [filter]="true" filterBy="label,value">
+          </p-dropdown>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="query.pd_min" binary="true" name="pd_min" label="ต่ำกว่าจุดต่ำสุด"></p-checkbox>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="query.below_max" binary="true" name="below_max" label="ต่ำกว่าจุดสูงสุด"></p-checkbox>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="query.below_rate" binary="true" name="below_rate" label="ต่ำกว่าอัตราการใช้เฉลี่ย"></p-checkbox>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.not_active" name="not_active"
+          [label]="query.not_active === null ? 'รวมยกเลิกใช้งาน' : 'ยกเลิกใช้งาน'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.on_orderneed" name="on_orderneed"
+          [label]="query.on_orderneed === null ? 'รวมที่ระบุว่าสั่งซื้อ' : 'แสดงที่ระบุว่าสั่งซื้อ'"></p-triStateCheckbox>
+        </div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="query.in_stock" name="in_stock"
+          [label]="query.in_stock === null ? 'รวมที่มีของในคลัง' : 'มีของในคลัง'"></p-triStateCheckbox>
+        </div>
+        <div class="rtx">
+          <button type="button" class="ui-button-success" pButton icon="pi pi-search" style="width: auto;"
+          label="ค้นหา" [disabled]="rptForm.form.invalid || !isReady" (click)="selectFromLeftPanel()"></button>
+        </div>
+        <div style="padding-bottom: 0"><hr></div>
+        <div>
+          <p-triStateCheckbox [(ngModel)]="inPO" name="inPO" (onChange)="showINPO()"
+          [label]="inPO === null ? 'รวมที่ขอเบิกแล้ว' : 'แสดงที่ขอเบิกแล้ว'"></p-triStateCheckbox>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<form #dialog="ngForm">
+  <p-dialog header="สร้างใบขอเบิก" [style]="{'max-width':'270px'}" [(visible)]="displayDialog"
+    [contentStyle]="{'overflow':'visible'}" [modal]="true">
+    <div class="p-grid ui-fluid">
+      <div class="p-col-12 b0">
+        <label for="StInvRef">เลขที่อ้างอิง</label>
+        <input type="text" pInputText id="StInvRef" name="StInvRef" [(ngModel)]="StInvRef" />
+      </div>
+      <div class="p-col-12 b0">
+        <label for="StInvStatus">สถานะ</label>
+        <p-dropdown inputId="StInvStatus" [options]="globalService.statusTable" [(ngModel)]="StInvStatus"
+          [style]="{'width':'100%'}" name="StInvStatus" appendTo="body">
+        </p-dropdown>
+      </div>
+      <div class="p-col-12 b0">
+        <label for="StInvMemo">หมายเหตุ</label>
+        <textarea pInputTextarea id="StInvMemo" name="StInvMemo" [(ngModel)]="StInvMemo"
+         style="width: 100%"></textarea>
+      </div>
+    </div>
+    <p-footer>
+      <div >
+        <button class="ui-button-raised" style="margin-right: 1em" type="button" pButton icon="pi pi-check"
+          (click)="createRQ()" label="สร้างใบขอเบิก"></button>
+        <button class="ui-button-raised ui-button-secondary" type="button" pButton icon="pi pi-times"
+          (click)="displayDialog=false" label="ยกเลิก"></button>
+      </div>
+    </p-footer>
+  </p-dialog>
+</form>
+
+<p-contextMenu #cm [model]="contextItems"></p-contextMenu>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="!!data.length"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-dialog #pd header="ข้อมูลวัสดุ" [(visible)]="displayPdItemDialog"
+[contentStyle]="{'overflow-x':'hidden', 'padding':'5px', 'max-height':'95vh'}"
+(onHide)="onPdDialogHide()" [style]="{'max-width': '730px', 'width':'95vw'}"
+[modal]="true" [blockScroll]="true" appendTo="body" [focusOnShow]="false">
+  <app-product *ngIf="showAppPD" [pdId]="pdId" [isDialog]="true"
+   (onSave)="updateSelect($event)" (onClose)="onPdDialogHide()"></app-product>
+</p-dialog>

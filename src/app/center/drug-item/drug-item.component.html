@@ -1,0 +1,165 @@
+<div *ngIf="!isDialog" class="p-grid ui-fluid p-nogutter" style="padding: .5em 0;max-width: 700px;margin: auto">
+  <div class="p-col">
+    <p-autoComplete [(ngModel)]="drugSelect" [suggestions]="filteredResults" (completeMethod)="filterResults($event)" [size]="30"
+      [minLength]="1" placeholder="ใส่คำค้นหา" field="DrugNameText" [dropdown]="true" [forceSelection]="true" scrollHeight="200px" 
+      [autofocus]="true" (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)" (onSelect)="selectItem()">
+      <ng-template let-drugSelect pTemplate="item">
+        <div class="ui-helper-clearfix panel-1">
+          <div>{{drugSelect.DrugID || ''}} : {{drugSelect.DrugNameText || ''}}</div>
+        </div>
+      </ng-template>
+    </p-autoComplete>
+  </div>
+  <div class="p-col-fixed" style="width: 2.65em; padding-left: 2px; padding-right: 0.5em">
+    <button pButton type="button" icon="pi pi-refresh" (click)="refreshItem()"></button>   
+  </div>
+</div>
+
+<div *ngIf="drugItem" style="max-width: 700px;margin: auto;padding-top: .5em;"> 
+  <!--form #drugItemForm="ngForm"-->
+    <div class="p-grid p-justify-between p-align-baseline">
+      <div class="p-col-6 p-sm-3" style="font-size: 1.5em; font-weight: bold; color: rgb(0, 124, 190); padding: 0 0 0 0.5em">
+        วัสดุส่วนกลาง
+      </div>
+      <div class="p-col-6 p-sm-3" style="padding: 0 0.5em 0 0; text-align: right">
+        <button *ngIf="(drugItem.DrugStock <= drugItem.DrugMin) && (drugItem.DrugMin > 0)" type="button" pButton icon="pi pi-arrow-down"
+         label="น้อยกว่าจุดต่ำสุด" class="ui-button-rounded ui-button-danger"></button>
+      </div>
+    </div>
+
+    <div class="p-grid p-justify-between">
+      <div class="p-col-4 p-sm-3">
+        <label for="DrugID">รหัสวัสดุ</label>
+        <div pInputText id="DrugID" style="font-weight: bold; color: rgb(0, 124, 190)">{{drugItem.DrugID}}</div>
+      </div>
+      <div class="p-col-4 p-sm-3" style="text-align: right">
+        <label for="DrugExp">วันหมดอายุ</label>
+        <div pInputText id="DrugExp" [style.color]="isExp(drugItem.DrugExp)">{{drugItem.DrugExp | shortDate}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid">
+      <div class="p-col-12">
+        <label for="DrugNameText">ชื่อวัสดุ</label>
+        <div pInputText id="DrugNameText">{{drugItem.DrugNameText || '&nbsp;'}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid md-show">
+      <div class="p-col-12 p-sm-6">
+        <label for="DrugGeneric">ชื่อพ้อง 1</label>
+        <div pInputText id="DrugGeneric">{{drugItem.DrugGeneric || '&nbsp;'}}</div>
+      </div>
+      <div class="p-col-12 p-sm-6">
+        <label for="DrugGeneric2">ชื่อพ้อง 2</label>
+        <div pInputText id="DrugGeneric2">{{drugItem.DrugGeneric2 || '&nbsp;'}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid">
+      <div class="p-col-12 p-sm-6">
+        <label for="GroupName">กลุ่มวัสดุ</label>
+        <div pInputText id="GroupName">{{drugItem.GroupName || '&nbsp;'}}</div>
+      </div>
+      <div class="p-col-12 p-sm-6">
+        <label for="CatName">หมวดวัสดุ</label>
+        <div pInputText id="CatName">{{drugItem.CatName || '&nbsp;'}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid" style="text-align: center">
+      <div class="p-col-6">
+        <label for="POInvID">รอการจัดซื้อ</label>
+        <div pInputText id="POInvID" style="border: 2px solid rgb(255, 128, 0)">{{POInvID || '&nbsp;'}}</div>
+      </div>
+      <div class="p-col-6">
+        <label for="RCInvID">รอตรวจรับ</label>
+        <div pInputText id="RCInvID" style="border: 2px solid rgb(0, 154, 20)">{{RCInvID || '&nbsp;'}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid">
+      <div class="p-col-4">
+        <label for="DrugPack">ขนาดบรรจุ</label>
+        <div pInputText id="DrugPack">{{drugItem.DrugPack}} {{drugItem.DrugUnit}}</div>
+      </div>
+      <div class="p-col-4" style="text-align: right">
+        <label for="DrugCost">ราคาเฉลี่ย</label>
+        <div pInputText id="DrugCost">{{drugItem.DrugCost*drugItem.DrugPack | currency:'THB':''}}</div>
+      </div>
+      <div class="p-col-4" style="text-align: right">
+        <label for="DrugCostUpdate">ราคาล่าสุด</label>
+        <div pInputText id="DrugCostUpdate">{{drugItem.DrugCostUpdate*drugItem.DrugPack | currency:'THB':''}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid p-justify-end" style="text-align:center">
+      <div class="p-col-6 p-sm-4">
+        <label for="DrugStock">คงคลังปัจจุบัน</label>
+        <div pInputText id="DrugStock" style="font-size: 1.2em; font-weight: bold">{{drugItem.DrugStock}} {{drugItem.DrugUnit}}</div>
+      </div>
+      <div class="p-col-6 p-sm-4">
+        <label for="DrugValue">มูลค่า</label>
+        <div pInputText id="DrugValue" style="font-size: 1.2em; font-weight: bold">{{drugItem.DrugValue | currency:'THB':''}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid" style="text-align:center">
+      <div class="p-col-6 p-sm-4">
+        <label for="Out3">ยอดเบิก: {{getThMonth(2)}}</label>
+        <div pInputText id="Out3">{{drugItem.Out3}} {{drugItem.DrugUnit}}</div>
+      </div>
+      <div class="p-col-6 p-sm-4">
+        <label for="Out2">{{getThMonth(1)}}</label>
+        <div pInputText id="Out2">{{drugItem.Out2}} {{drugItem.DrugUnit}}</div>
+      </div>
+      <div class="p-col-12 p-sm-4">
+        <label for="Out1">{{getThMonth(0)}}</label>
+        <div pInputText id="Out1">{{drugItem.Out1}} {{drugItem.DrugUnit}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid" style="text-align:center">
+      <div class="p-col-6">
+        <label for="DrugMin">คงคลังต่ำสุด</label>
+        <div pInputText id="DrugMin">{{drugItem.DrugMin}} {{drugItem.DrugUnit}}</div>
+      </div>
+      <div class="p-col-6">
+        <label for="DrugMax">คงคลังสูงสุด</label>
+        <div pInputText id="DrugMax">{{drugItem.DrugMax}} {{drugItem.DrugUnit}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid">
+      <div class="p-col-12 p-sm-6">
+        <label for="ManuName">ผู้ผลิต</label>
+        <div pInputText id="ManuName">{{drugItem.ManuName || '&nbsp;'}}</div>
+      </div>
+      <div class="p-col-12 p-sm-6">
+        <label for="SupplyName">ผู้จำหน่าย</label>
+        <div pInputText id="SupplyName">{{drugItem.SupplyName || '&nbsp;'}}</div>
+      </div>
+    </div>
+
+    <div class="p-grid">
+      <div class="p-col-12 rtx p-col-align-end">
+        <button type="button" pButton label="รายละเอียด Lot" icon="pi pi-list"
+        (click)="displayDrugDetail = true"></button>
+        <!-- <button type="button" pButton label="บันทึก" icon="pi pi-save" style="margin-left: .5em;"
+        (click)="saveData()" *ngIf="globalService.isAdmin && globalService.user.depart !== 'center'"
+        [disabled]="!pdForm.form.valid"></button> -->
+        <button type="button" pButton label="ปิด" icon="pi pi-times" style="margin-left: .5em;"
+        (click)="closeDialog()" class="ui-button-secondary ui-button-raised" *ngIf="isDialog" ></button>
+      </div>
+    </div>
+  <!--/form-->
+</div>
+
+<p-dialog #pd header="รายละเอียด Lot" [(visible)]="displayDrugDetail" [dismissableMask]="true"
+[contentStyle]="{'overflow':'auto', 'padding':'5px', 'max-height':'95vh'}" [focusOnShow]="false"
+[style]="{'width': '95vw', 'max-width': '840px'}" [modal]="true" [blockScroll]="true" appendTo="body">
+  <app-drug-lot *ngIf="displayDrugDetail" [drugItem]="drugItem"></app-drug-lot>
+</p-dialog>
+
+  
+  

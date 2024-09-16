@@ -1,0 +1,16 @@
+.run-num {
+  width: 35px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+.sub-text {
+  font-size: .95em;
+}
+.stock-out {
+  color: #a0a0a0;
+}
+
+:host ::ng-deep .ui-button.ui-button-text-only .ui-button-text {
+  padding: 0.2em 1em;
+}

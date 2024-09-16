@@ -1,0 +1,250 @@
+<div class="p-grid" style="margin-top: 0;height: 100%;">
+  <div class="p-col-fixed" style="width: 200px;"
+   *ngIf="!globalService.isPrint && !leftPanelCollapse">
+    <!-- <app-left-panel [pageType]="0"></app-left-panel> -->
+  </div>
+  <div class="p-col right-panel" *ngIf="hasPageData">
+    <div class="inv-header rtinv">
+      <div class="p-grid ui-fluid p-nogutter">
+        <div class="p-col-12" style="display: flex;">
+          <i *ngIf="leftPanelCollapse" class="toggle pi" [ngClass]="{'pi-chevron-right': !leftPanel2Show, 'pi-chevron-down': leftPanel2Show}"
+          (click)="isPopUp = true;leftPanel2Show = true" style="cursor: pointer;"></i>
+          <div style="font-size: 1rem; font-weight: bold">สรุปรวมรับวัสดุ</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 1 && sumINMonthData.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 900px">
+        <p-table [value]="sumINMonthData" [resizableColumns]="true" [scrollable]="!globalService.isPrint"
+         [scrollHeight]="scrollViewPort()" [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:7%"><col style="width:21%"><col style="width:19%">
+              <col style="width:15%"><col style="width:8%"><col style="width:12%">
+              <col style="width:4%"><col style="width:10%"><col style="width:4%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn pSortableColumn="StInvCust">รหัส<p-sortIcon field="StInvCust"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="SupplierName">ผู้จำหน่าย<p-sortIcon field="SupplierName"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="CatName">หมวดวัสดุ<p-sortIcon field="CatName"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="GroupName">กลุ่มวัสดุ<p-sortIcon field="GroupName"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="BudgetType">ประเภทงบ<p-sortIcon field="BudgetType"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="MethodName">วิธีจัดซื้อ<p-sortIcon field="MethodName"></p-sortIcon></th>
+              <th style="padding: 0" pResizableColumn pSortableColumn="CountRec">รายการ<p-sortIcon field="CountRec"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="GndTotal">มูลค่า<p-sortIcon field="GndTotal"></p-sortIcon></th>
+              <th style="padding: 0" pResizableColumn pSortableColumn="AllPercent">%<p-sortIcon field="AllPercent"></p-sortIcon></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr>
+              <td style="padding: 4px">{{data.StInvCust}}</td>
+              <td>{{data.SupplierName}}</td>
+              <td>{{data.CatName}}</td>
+              <td>{{data.GroupName}}</td>
+              <td>{{data.BudgetType}}</td>
+              <td>{{data.MethodName}}</td>
+              <td class="ctx p0">{{data.CountRec}}</td>
+              <td class="rtx">{{data.GndTotal | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.AllPercent | number:'1.0-1'}}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+    <div *ngIf="showReport === 1 && sumINMonthData.length" class="footer-rpt-btn" style="font-size: .9em">
+      <div class="p-grid p-justify-between p-align-center p-nogutter tbl-footer">
+        <div class="p-col-5" style="font-weight: bold">ทั้งหมด {{AllTotal | currency:'THB':''}}</div>
+        <div class="p-col-7" style="text-align: right;font-weight: bold">
+          รวมที่เลือก {{GrandSTTotal | currency:'THB':''}} / {{GrandSTTotal / AllTotal * 100 | number:'1.0-1'}}%
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showReport === 2 && sumINMonthCatData.length" style="margin-top: .5em;font-size: .9em;overflow-x: auto;">
+      <div style="min-width: 750px">
+        <p-table [value]="sumINMonthCatData" [resizableColumns]="true" [scrollable]="!globalService.isPrint"
+         [scrollHeight]="scrollViewPort()" [paginator]="!globalService.isPrint" [rows]="50" [alwaysShowPaginator]="false">
+          <ng-template pTemplate="colgroup" let-columns>
+            <colgroup>
+              <col style="width:8%"><col style="width:27%"><col style="width:15%">
+              <col style="width:15%"><col style="width:15%"><col style="width:15%">
+              <col style="width:5%">
+            </colgroup>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr class="rtinv" style="white-space: nowrap;">
+              <th pResizableColumn pSortableColumn="StInvCust">รหัส<p-sortIcon field="StInvCust"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="SupplierName">ผู้จำหน่าย<p-sortIcon field="SupplierName"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="GndTotal1">มูลค่ายา<p-sortIcon field="GndTotal1"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="ExtGndTotal">เวชภัณฑ์ไม่ใช่ยา<p-sortIcon field="ExtGndTotal"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="OTHGndTotal">อื่นๆ<p-sortIcon field="OTHGndTotal"></p-sortIcon></th>
+              <th pResizableColumn pSortableColumn="GndTotalAll">มูลค่ารวม<p-sortIcon field="GndTotalAll"></p-sortIcon></th>
+              <th style="padding: 0" pResizableColumn>%</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-data>
+            <tr>
+              <td>{{data.StInvCust}}</td>
+              <td>{{data.SupplierName}}</td>
+              <td class="rtx">{{data.GndTotal1 | currency:'THB':''}}</td>
+              <td class="rtx">{{data.ExtGndTotal | currency:'THB':''}}</td>
+              <td class="rtx">{{data.OTHGndTotal | currency:'THB':''}}</td>
+              <td class="rtx">{{data.GndTotalAll | currency:'THB':''}}</td>
+              <td class="ctx p0">{{data.AllPercent | number:'1.0-1'}}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="2" style="text-align: center">รวมทั้งหมด</td>
+              <td class="rtx">{{GndTotal2 | currency:'THB':''}}</td>
+              <td class="rtx">{{EXTGndTotal2 | currency:'THB':''}}</td>
+              <td class="rtx">{{OTHGndTotal2 | currency:'THB':''}}</td>
+              <td class="rtx">{{SumAll2 | currency:'THB':''}}</td>
+              <td class="ctx p0">100</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #left>
+  <form #rptForm="ngForm">
+    <div style="padding-top: 6px">
+      <div class="inv-header rtinv ctx">
+        <span style="font-weight: bold">เงื่อนไข</span>
+      </div>
+      <div class="content-show ui-fluid" [ngClass]="{'popup': isPopUp}">
+        <div>
+          <label for="StInvID">เลขที่รับ</label>
+          <p-autoComplete inputId="StInvID" [(ngModel)]="StInvSelect" [suggestions]="filteredResults"
+            (completeMethod)="filterResults($event)" [size]="30" appendTo="body" name="StInvID"
+            [minLength]="2" field="StInvID" [forceSelection]="true" scrollHeight="200px" 
+            [autofocus]="true" (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)" 
+            (onSelect)="StInvID = StInvSelect.StInvID;allTotalNeedRefresh = true">
+            <ng-template let-data pTemplate="item">
+              <div class="ui-helper-clearfix panel-1" style="width: 80vw; max-width: 500px">
+                {{data.StInvID || ''}} : {{data.StInvDate | shortDate}} : 
+                {{data.SupplierName || ''}} {{data.StInvRef || ''}} 
+                <span *ngIf="!data.StInvUpdate" style="color: #ff8e20">(ยังไม่ได้รับเข้าคลัง)</span>
+              </div>
+            </ng-template>
+          </p-autoComplete>
+        </div>
+        <div>
+          <label for="StInvID2">ถึง</label>
+          <p-autoComplete inputId="StInvID2" [(ngModel)]="StInvSelect2" [suggestions]="filteredResults"
+            (completeMethod)="filterResults($event)" [size]="30" appendTo="body" name="StInvID2"
+            [minLength]="2" field="StInvID" [forceSelection]="true" scrollHeight="200px" 
+            [autofocus]="true" (onFocus)="$event.target.setSelectionRange(0, $event.target.value.length)" 
+            (onSelect)="StInvID2 = StInvSelect2.StInvID;allTotalNeedRefresh = true">
+            <ng-template let-data pTemplate="item">
+              <div class="ui-helper-clearfix panel-1" style="width: 80vw; max-width: 500px">
+                {{data.StInvID || ''}} : {{data.StInvDate | shortDate}} : 
+                {{data.SupplierName || ''}} {{data.StInvRef || ''}} 
+                <span *ngIf="!data.StInvUpdate" style="color: #ff8e20">(ยังไม่ได้รับเข้าคลัง)</span>
+              </div>
+            </ng-template>
+          </p-autoComplete>
+        </div>
+        <div>
+          <label for="tdate3">วันที่รับเข้า</label>
+          <p-calendar [(ngModel)]="tdate3" dateFormat="dd/mm/yy" [locale]="th" name="tdate3"
+           (onBlur)="allTotalNeedRefresh = true" appendTo="body"
+            showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="tdate4">ถึง</label>
+          <p-calendar [(ngModel)]="tdate4" dateFormat="dd/mm/yy" [locale]="th" name="tdate4"
+           (onBlur)="allTotalNeedRefresh = true" appendTo="body"></p-calendar>
+        </div>
+        <div>
+          <label for="tdate5">เดือนประมวลผล</label>
+          <p-calendar [(ngModel)]="tdate5" view="month" dateFormat="mm/yy" [yearNavigator]="true"
+            yearRange="2010:2050" [locale]="th" name="tdate5" appendTo="body" (onBlur)="allTotalNeedRefresh = true"
+            showButtonBar="true" todayButtonStyleClass="ui-button-primary" clearButtonStyleClass="ui-button-warning">
+          </p-calendar>
+        </div>
+        <div>
+          <label for="DrugType">ประเภท</label>
+          <p-dropdown inputId="DrugType" [options]="dataService.DrugTypeTable" [(ngModel)]="DrugType"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugType">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="StInvCust">ผู้จำหน่าย</label>
+          <p-dropdown id="StInvCust" [options]="dataService.SupplierTable" [(ngModel)]="StInvCust"
+          [virtualScroll]="true" [itemSize]="31" [filter]="true" filterBy="label,value"
+          [style]="{'width':'100%'}" appendTo="body" name="StInvCust">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugCat">หมวดวัสดุ</label>
+          <p-dropdown inputId="DrugCat" [options]="dataService.DrugCatTable" [(ngModel)]="DrugCat"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugCat">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DrugGroup">กลุ่มวัสดุ</label>
+          <p-dropdown inputId="DrugGroup" [options]="dataService.DrugGroupTable" [(ngModel)]="DrugGroup"
+          [style]="{'width':'100%'}" appendTo="body" name="DrugGroup">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="StInvBudget">ประเภทงบ</label>
+          <p-dropdown inputId="StInvBudget" [options]="dataService.BudgetTable" [(ngModel)]="StInvBudget"
+          [style]="{'width':'100%'}" appendTo="body" name="StInvBudget">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="StInvMethod">วิธีจัดซื้อ</label>
+          <p-dropdown inputId="StInvMethod" [options]="dataService.POMethodTable" [(ngModel)]="StInvMethod"
+          [style]="{'width':'100%'}" appendTo="body" name="StInvMethod">
+          </p-dropdown>
+        </div>
+        <div>
+          <label for="DtCoPO">จัดซื้อร่วม</label>
+          <p-dropdown inputId="DtCoPO" [options]="dataService.CoPOTable" [(ngModel)]="DtCoPO"
+          [style]="{'width':'100%'}" appendTo="body" name="DtCoPO">
+          </p-dropdown>
+        </div>
+        <div>
+          <p-checkbox [(ngModel)]="DtInnovate" label="บัญชี นว." binary="true" name="DtInnovate"></p-checkbox>
+        </div>
+        <div class="rtx">
+          <button type="button" pButton class="ui-button-success" label="ค้นหา" icon="pi pi-search"
+          style="width: auto;" (click)="setFilter()" [disabled]="rptForm.form.invalid"></button>
+        </div>
+        <div style="padding-bottom: 0"><hr></div>
+        <div>
+          <p-radioButton name="group1" label="แสดงหมวดกลุ่ม" [value]="1" [(ngModel)]="showReport"
+           (onClick)="reportChange()"></p-radioButton>
+        </div>
+        <div>
+          <p-radioButton name="group1" label="สรุปตามผู้จำหน่าย" [value]="2" [(ngModel)]="showReport"
+           (onClick)="reportChange()"></p-radioButton>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<p-sidebar [(visible)]="leftPanelShow" position="left" [showCloseIcon]="false" [modal]="false" [autoZIndex]="false"
+[style]="{'width':'200px', 'top': '70px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 75px)', 'border': '0px',
+'padding': '0px 0.6em', 'box-shadow': 'none'}" *ngIf="!globalService.isPrint">
+  <ng-container *ngIf="leftPanelShow">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
+
+<p-sidebar [(visible)]="leftPanel2Show" position="left" [showCloseIcon]="false" [modal]="hasPageData"
+[style]="{'width':'200px', 'top': '35px', 'height': 'calc(calc(var(--vh, 1vh) * 100) - 40px)','padding': '0px 0.6em'}">
+  <ng-container *ngIf="leftPanel2Show">
+    <ng-container *ngTemplateOutlet="left"></ng-container>
+  </ng-container>
+</p-sidebar>
